@@ -4,6 +4,12 @@
 
 Open-source Feishu/Lark AI bot template. Clone, configure environment variables, and run a working AI agent with tool calling in under 10 minutes.
 
+## GitHub
+
+- **Repo**: https://github.com/Phat-Po/lark-agent-template
+- **Release**: v1.0.0 (2026-05-26)
+- **Branch**: main (only)
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -15,6 +21,7 @@ Open-source Feishu/Lark AI bot template. Clone, configure environment variables,
 | Database | SQLite |
 | Scheduler | APScheduler |
 | Container | Docker + docker-compose |
+| CI | GitHub Actions (pytest, Python 3.11/3.12) |
 
 ## Constraints
 
@@ -22,3 +29,16 @@ Open-source Feishu/Lark AI bot template. Clone, configure environment variables,
 - .env not in git, secrets not hardcoded
 - SQLite file permissions 600
 - Provider-agnostic LLM via OpenAI-compatible SDK
+- Bilingual docs (English + Chinese)
+
+## Built-in Tools
+
+Calendar (read/create/delete), Tasks (CRUD), Documents (search/read/create/delete/move), Messaging, Web Search — 15 tools total with auto-harness wrapping.
+
+## Release Workflow
+
+```bash
+git tag v<version>
+git push origin v<version>
+gh release create v<version> --repo Phat-Po/lark-agent-template --title "v<version>" --notes "..."
+```
