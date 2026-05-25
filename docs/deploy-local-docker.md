@@ -13,7 +13,7 @@ Run the agent on your laptop with a single command.
 ### 1. Clone the repo
 
 ```
-git clone https://github.com/your-org/lark-agent-template.git
+git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 ```
 

@@ -15,7 +15,7 @@ Deploy the agent to a Linux VPS for 24/7 availability.
 
 ```
 ssh user@your-vps-ip
-git clone https://github.com/your-org/lark-agent-template.git
+git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 ```
 

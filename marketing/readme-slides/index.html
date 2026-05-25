@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1.0">
+<title>Lark Agent Template — Slides</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --cyan: #79c0ff;
+    --purple: #bc8cff;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .slide {
+    width: 1920px;
+    height: 1080px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(88,166,255,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(188,140,255,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Grid overlay */
+  .slide::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(48,54,61,0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(48,54,61,0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 4.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .subtitle {
+    font-size: 1.6rem;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 1000px;
+    line-height: 1.5;
+    margin-top: 32px;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
+  }
+
+  .accent { color: var(--accent); }
+  .green { color: var(--green); }
+  .orange { color: var(--orange); }
+  .cyan { color: var(--cyan); }
+  .purple { color: var(--purple); }
+
+  .terminal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    width: 100%;
+    max-width: 1100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .terminal-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .terminal-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--orange); }
+  .dot-green { background: var(--green); }
+
+  .prompt { color: var(--green); }
+  .cmd { color: var(--text); }
+  .comment { color: var(--text-dim); }
+  .output { color: var(--cyan); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 36px;
+  }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-body {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 32px;
+    text-align: center;
+  }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 1.5rem;
+  }
+
+  .checklist {
+    list-style: none;
+    font-size: 1.4rem;
+    line-height: 2.2;
+    position: relative;
+    z-index: 1;
+  }
+
+  .checklist li::before {
+    content: '✓';
+    color: var(--green);
+    margin-right: 16px;
+    font-weight: 700;
+  }
+
+  .pain-list {
+    list-style: none;
+    font-size: 1.4rem;
+    line-height: 2.2;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pain-list li::before {
+    content: '✗';
+    color: var(--red);
+    margin-right: 16px;
+    font-weight: 700;
+  }
+
+  .vs {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .vs-side {
+    flex: 1;
+  }
+
+  .vs-divider {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge {
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .badge-blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge-orange { background: rgba(210,153,34,0.15); color: var(--orange); border: 1px solid rgba(210,153,34,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Slide 1: Hero -->
+<section class="slide slide--hero">
+  <div class="tag">PYTHON · FASTAPI · FEISHU/LARK · OPENAI-COMPATIBLE</div>
+  <h1><span class="accent">Lark Agent</span> Template</h1>
+  <p class="subtitle">A ready-to-use Feishu/Lark AI agent with tool calling,<br>observability harness, and extensible plugin system.</p>
+  <div class="badge-row">
+    <span class="badge badge-blue">Python 3.11+</span>
+    <span class="badge badge-green">MIT License</span>
+    <span class="badge badge-purple">Docker Ready</span>
+    <span class="badge badge-orange">8 Built-in Tools</span>
+  </div>
+</section>
+
+<!-- Slide 2: Pain -->
+<section class="slide slide--pain">
+  <h2><span class="red">The Problem</span></h2>
+  <div class="vs">
+    <div class="vs-side">
+      <ul class="pain-list">
+        <li>Hand-write lark-oapi integration from scratch</li>
+        <li>Build conversation memory and session management</li>
+        <li>Add metrics, tracing, idempotency per tool</li>
+        <li>Handle error envelopes and retry logic</li>
+        <li>Configure Docker and deployment scripts</li>
+      </ul>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="vs-side">
+      <ul class="checklist">
+        <li>Clone, configure, run in 5 minutes</li>
+        <li>Auto-harness wraps every tool</li>
+        <li>Built-in observability stack</li>
+        <li>Provider-agnostic LLM</li>
+        <li>Docker Compose one command</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 3: Features -->
+<section class="slide slide--features">
+  <h2><span class="cyan">What You Get</span></h2>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🛠️</span> Tool Calling Agent</div>
+      <div class="card-body">LLM decides when to call tools. Results feed back for multi-step reasoning. Up to 10 rounds per message.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> Observability Harness</div>
+      <div class="card-body">Metrics, tracing, idempotency, schema validation — automatically applied to every registered tool.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🧠</span> Dual Memory System</div>
+      <div class="card-body">Session history for conversation context + persistent SQLite memory per user for long-term facts.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🔌</span> One-Decorator Extension</div>
+      <div class="card-body">Add a new tool with @register_tool. Drop the file in src/tools/. Restart. Full harness coverage, zero config.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 4: Quick Start -->
+<section class="slide slide--demo">
+  <h2><span class="green">5 Minutes to Live</span></h2>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot dot-red"></div>
+      <div class="terminal-dot dot-yellow"></div>
+      <div class="terminal-dot dot-green"></div>
+    </div>
+    <div><span class="prompt">$</span> <span class="cmd">git clone https://github.com/Phat-Po/lark-agent-template.git</span></div>
+    <div><span class="prompt">$</span> <span class="cmd">cd lark-agent-template</span></div>
+    <div><span class="prompt">$</span> <span class="cmd">cp .env.example .env</span> <span class="comment"># fill in LARK_APP_ID, LLM_API_KEY</span></div>
+    <div><span class="prompt">$</span> <span class="cmd">docker compose up --build</span></div>
+    <div>&nbsp;</div>
+    <div><span class="output">✓ lark_channel_started</span></div>
+    <div><span class="output">✓ agent_ready  tools=8  model=gpt-4o</span></div>
+    <div>&nbsp;</div>
+    <div><span class="comment"># Send a message to your bot in Feishu → reply in seconds</span></div>
+  </div>
+</section>
+
+<!-- Slide 5: Architecture -->
+<section class="slide slide--how">
+  <h2><span class="purple">How It Works</span></h2>
+  <div class="flow">
+    <div class="flow-box">Feishu<br><span style="color:var(--text-dim);font-size:0.9rem;">WebSocket</span></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box">Lark Client</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box" style="border-color:var(--accent);">Agent Loop<br><span style="color:var(--text-dim);font-size:0.9rem;">multi-step reasoning</span></div>
+    <span class="flow-arrow">↔</span>
+    <div class="flow-box">LLM API<br><span style="color:var(--text-dim);font-size:0.9rem;">OpenAI-compatible</span></div>
+  </div>
+  <div style="height:48px;"></div>
+  <div class="flow">
+    <div class="flow-box" style="border-color:var(--green);">Tool Registry<br><span style="color:var(--text-dim);font-size:0.9rem;">auto-harness wrapped</span></div>
+    <span class="flow-arrow">↓</span>
+    <div class="flow-box">Feishu API</div>
+    <div class="flow-box">Web Search</div>
+    <div class="flow-box">External APIs</div>
+  </div>
+  <div style="height:48px;"></div>
+  <div class="flow">
+    <div class="flow-box" style="border-color:var(--orange);">Memory (SQLite)<br><span style="color:var(--text-dim);font-size:0.9rem;">session + persistent</span></div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,46 +1,143 @@
-# Lark Agent Template
+# 🦅 Lark Agent Template
 
-A ready-to-use AI bot template for Feishu/Lark with tool calling,
-observability harness, and extensible plugin system.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](https://www.docker.com/)
 
-## Features
+<pre>
+██       ████    ███████    ██
+██      ██   ██     ██      ██
+██      ██████      ██      ██
+██      ██   ██     ██      ██
+██████  ██   ██     ██      ██
+</pre>
 
-- **Tool-calling agent loop** — LLM decides when to call tools,
-  results feed back for multi-step reasoning
-- **5 built-in tools** — Calendar, Documents, Tasks, Messaging, Web Search
-- **Observability harness** — Metrics, tracing, idempotency,
-  schema validation — automatically applied to all tools
-- **Extensible** — Add custom tools with a single decorator,
-  harness wraps them automatically
-- **Provider-agnostic LLM** — Works with any OpenAI-compatible API
-  (OpenAI, DeepSeek, Mimo, Ollama, etc.)
-- **Conversation memory** — Session history + persistent long-term memory
-- **Easy deployment** — Docker Compose locally or on any VPS
+**A ready-to-use Feishu/Lark AI agent with tool calling, observability harness, and extensible plugin system.**
 
-## Quickstart (5 minutes)
+📖 [查看简体中文文档](README.zh.md)
 
-### 1. Clone and configure
+---
 
-```
-git clone https://github.com/your-org/lark-agent-template.git
+## Why Lark Agent Template?
+
+![Before vs After — hand-write boilerplate vs clone-and-go template](./marketing/screenshots/02-pain.png)
+
+**Clone, configure, run. Your AI assistant is live in 5 minutes.**
+
+| Feature | Lark Agent Template | Feishu-OpenAI | nonebot2 |
+|---------|:-------------------:|:-------------:|:--------:|
+| Language | Python | Go | Python |
+| Tool calling with auto-harness | ✅ | ❌ | ❌ |
+| Observability (metrics, tracing) | ✅ built-in | ❌ | ❌ |
+| Provider-agnostic LLM | ✅ | OpenAI only | via plugins |
+| Template (clone & go) | ✅ | ❌ | ❌ |
+| Conversation memory | ✅ session + persistent | ✅ | via plugins |
+| Docker deployment | ✅ | ✅ | ✅ |
+
+---
+
+## ✨ Features
+
+![Core capabilities — tool calling, observability, memory, extensibility](./marketing/screenshots/03-features.png)
+
+---
+
+## 📋 Requirements
+
+- Python 3.11+ (or Docker)
+- A [Feishu/Lark Open Platform](https://open.feishu.cn/) app
+- An LLM API key (OpenAI, DeepSeek, Mimo, or any OpenAI-compatible provider)
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your Feishu app credentials and LLM API key.
-See [Feishu App Setup](docs/feishu-app-setup.md) for how to create an app.
+Edit `.env` with your Feishu app credentials and LLM API key.
+See [Feishu App Setup](docs/feishu-app-setup.md) for a step-by-step guide.
 
-### 2. Run
+---
 
-```
+## 🚀 Quick Start
+
+![Clone, configure, run — 5 minutes to live](./marketing/screenshots/04-demo.png)
+
+**With Docker (recommended):**
+
+```bash
 docker compose up --build
 ```
 
-### 3. Test
+**Without Docker:**
 
-Send a message to your bot in Feishu. You should get a reply within a few seconds.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn src.main:app --host 0.0.0.0 --port 8080
+```
 
-## Adding Custom Tools
+---
+
+## 🛠️ Built-in Tools
+
+| Tool | Description | Risk Level |
+|------|-------------|:----------:|
+| `get_calendar` | Read calendar events for a date range | read |
+| `create_calendar_event` | Create events with attendees | write |
+| `delete_calendar_event` | Delete a calendar event | destructive |
+| `get_tasks` | List tasks (filter by status/keyword) | read |
+| `get_task` | Get a single task by GUID | read |
+| `create_task` | Create a task with due date and assignees | write |
+| `delete_task` | Delete a task | destructive |
+| `search_docs` | Search Feishu documents by keyword | read |
+| `read_doc` | Read full document content | read |
+| `create_doc` | Create a new document | write |
+| `delete_doc` | Delete a document | destructive |
+| `move_file` | Move a file to another folder | write |
+| `create_folder` | Create a folder in Drive | write |
+| `send_message` | Send a message to user or group | write |
+| `search_web` | Search the web via SerpAPI | read |
+
+---
+
+## 🔧 Configuration
+
+All configuration is via environment variables. Copy `.env.example` to `.env` and fill in:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LARK_APP_ID` | — | Feishu app ID (required) |
+| `LARK_APP_SECRET` | — | Feishu app secret (required) |
+| `LLM_API_KEY` | — | LLM provider API key (required) |
+| `LLM_BASE_URL` | `https://api.openai.com/v1` | LLM API base URL |
+| `LLM_MODEL` | `gpt-4o` | Model name |
+| `MAX_HISTORY_ROUNDS` | `20` | Max conversation turns in context |
+| `MAX_TOKEN_BUDGET` | `3000` | Max tokens in LLM response |
+| `REQUIRE_WRITE_CONFIRMATION` | `true` | Ask user before write/destructive tools |
+| `SEARCH_API_KEY` | — | SerpAPI key (optional, for web search) |
+| `DB_PATH` | `data/agent.db` | SQLite database path |
+| `LOG_LEVEL` | `INFO` | Logging level |
+
+**Switch LLM provider** by changing `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`. No code changes needed.
+
+---
+
+## 📐 Architecture
+
+![Message flow — Feishu WebSocket → Agent Loop → Tool Registry → Memory](./marketing/screenshots/05-how.png)
+
+See [docs/architecture.md](docs/architecture.md) for the full design.
+
+---
+
+## ➕ Adding Custom Tools
 
 ```python
 from src.tools.registry import register_tool
@@ -66,38 +163,61 @@ async def get_weather(city: str) -> dict:
 Place the file in `src/tools/` and restart — it auto-registers with full harness coverage.
 See [docs/adding-tools.md](docs/adding-tools.md) for the full guide.
 
-## Architecture
+---
 
+## 📖 Documentation
+
+- [Feishu App Setup](docs/feishu-app-setup.md) — Create and configure your Feishu app
+- [Adding Tools](docs/adding-tools.md) — Build custom tools with the harness
+- [Architecture](docs/architecture.md) — Message flow, harness layer, memory system
+- [Local Docker Deployment](docs/deploy-local-docker.md) — Run on your laptop
+- [VPS Deployment](docs/deploy-vps.md) — Deploy to a Linux server
+
+---
+
+<details>
+<summary>🚀 Advanced: VPS Deployment</summary>
+
+Deploy to a Linux VPS for 24/7 availability:
+
+```bash
+ssh user@your-vps
+git clone https://github.com/Phat-Po/lark-agent-template.git
+cd lark-agent-template
+cp .env.example .env && nano .env
+docker compose up -d --build
 ```
-Feishu ──WebSocket──► Lark Client ──► Agent Loop ◄──► LLM API
-                                           │
-                                    Tool Registry
-                                    (harness-wrapped)
-                                           │
-                                     Memory (SQLite)
+
+The agent connects outbound via WebSocket — no inbound ports needed.
+
+See [docs/deploy-vps.md](docs/deploy-vps.md) for systemd service setup and firewall notes.
+</details>
+
+<details>
+<summary>🛠️ Development</summary>
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e ".[dev]"
+pytest
 ```
 
-## Documentation
+Run tests:
+```bash
+pytest tests/
+```
+</details>
 
-- [Feishu App Setup](docs/feishu-app-setup.md) — Create your Feishu app
-- [Adding Tools](docs/adding-tools.md) — Build custom tools
-- [Local Docker Deployment](docs/deploy-local-docker.md)
-- [VPS Deployment](docs/deploy-vps.md)
-- [Architecture Details](docs/architecture.md)
+---
 
-## Built-in Tools
+## 📄 License
 
-| Tool | Description | Risk Level |
-|------|-------------|------------|
-| `get_calendar` | Read calendar events | read |
-| `create_calendar_event` | Create calendar events | write |
-| `search_docs` | Search documents | read |
-| `create_doc` | Create a document | write |
-| `get_tasks` | List tasks | read |
-| `create_task` | Create a task | write |
-| `send_message` | Send a chat message | write |
-| `search_web` | Search the web | read |
+MIT © 2026 [Phat-Po](https://github.com/Phat-Po)
 
-## License
+---
 
-MIT
+<div align="center">
+  <sub>Built with <a href="https://github.com/larksuite/oapi-sdk-python">lark-oapi</a> · Star this repo if it helped you!</sub>
+</div>
