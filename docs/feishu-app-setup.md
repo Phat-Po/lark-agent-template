@@ -1,75 +1,98 @@
 # Feishu App Setup
 
-Create a Feishu (Lark) app and configure it to work with this agent.
+Complete checklist for creating and configuring a Feishu app to work with this agent.
 
-## 1. Create an app
+## Checklist
 
-1. Go to [Feishu Open Platform](https://open.feishu.cn/)
+- [ ] Create app, copy App ID + App Secret
+- [ ] Enable Bot capability
+- [ ] Add required permissions
+- [ ] Set event subscription to WebSocket mode
+- [ ] Add `im.message.receive_v1` event
+- [ ] Publish a version
+- [ ] Enable the app in admin console
+- [ ] Fill `.env` with credentials
+
+---
+
+## 1. Create the app
+
+1. Go to [open.feishu.cn](https://open.feishu.cn/)
 2. Click **Create App** → **Enterprise Custom App**
-3. Fill in the app name and description
-4. Note down **App ID** and **App Secret** from the Credentials tab
+3. Fill in app name and description
+4. Go to **Credentials & Basic Info** — copy **App ID** and **App Secret**
 
-## 2. Enable required permissions
+## 2. Enable Bot capability
 
-Go to **Permissions & Scopes** and add the following scopes. Enable the scopes that correspond to the tools you want to use.
+1. Go to **Add App Capability**
+2. Find **Bot** → click **Enable**
 
-### Always required (messaging)
+Without this step, the bot won't appear in Feishu search.
+
+## 3. Add permissions
+
+Go to **Permissions & Scopes** and add scopes for the tools you want to use.
+
+### Always required
 
 | Scope | Description |
 |-------|-------------|
 | `im:message` | Receive messages |
 | `im:message:send_as_bot` | Send messages as bot |
-| `im:message.group_at_msg:readonly` | Read group @ messages |
 
 ### Calendar tool
 
 | Scope | Description |
 |-------|-------------|
 | `calendar:calendar` | Read/write calendars |
-| `calendar:calendar:readonly` | Read calendars (if write not needed) |
 
 ### Docs tool
 
 | Scope | Description |
 |-------|-------------|
 | `docs:doc` | Read/write documents |
-| `docs:doc:readonly` | Read documents (if write not needed) |
-| `drive:drive` | Access Drive (for file management) |
+| `drive:drive` | Access Drive |
 
 ### Tasks tool
 
 | Scope | Description |
 |-------|-------------|
 | `task:task` | Read/write tasks |
-| `task:task:readonly` | Read tasks (if write not needed) |
 
-## 3. Enable WebSocket mode
+## 4. Configure event subscription
 
 1. Go to **Event Subscription**
 2. Under **Subscription Method**, select **Use long connection to receive events (WebSocket)**
-3. Enable the following events:
-   - `im.message.receive_v1` — receive messages
+3. Click **Add Event** → search for and add `im.message.receive_v1`
 
-## 4. Subscribe to message events
+When you add this event, Feishu will show a list of required permissions. You must enable **at least one** of the following for the event to work:
 
-In **Event Subscription**, click **Add Event** and add:
+| Permission | Description |
+|------------|-------------|
+| 获取群组中用户@机器人消息 | Receive @ mentions in group chats |
+| 读取用户发给机器人的单聊消息 | Receive direct messages to the bot |
+| 获取群组中其他机器人和用户@当前机器人的消息 | Receive @ mentions from other bots |
+| 获取群组中所有消息（敏感权限） | Receive all group messages (sensitive) |
 
-- `im.message.receive_v1`
+For basic usage, enable the first two. Go to **Permissions & Scopes** and confirm they show **已开通** (Enabled), then return to Event Subscription to finish adding the event.
+
+Without this step, the WebSocket connects but no messages are delivered.
 
 ## 5. Publish the app
 
 1. Go to **Version Management & Publish** → **Create a version**
-2. Submit for review (or self-review for enterprise admin)
-3. Publish the version
+2. Fill in version notes → **Submit**
+3. If you are the enterprise admin, approve immediately
 
-## 6. Add the bot to a conversation
+## 6. Enable in admin console
 
-- For **personal messages**: search for your app name in Feishu and send it a message
-- For **group chats**: add the bot as a member of the group
+Even after publishing, the app must be enabled for your organization:
+
+1. Go to [admin.feishu.cn](https://admin.feishu.cn)
+2. Left menu → **App Management**
+3. Find your app → click **Enable**
 
 ## 7. Configure `.env`
-
-Copy the App ID and App Secret into your `.env` file:
 
 ```
 LARK_APP_ID=cli_xxxxxxxxxxxxxxxx
@@ -78,8 +101,9 @@ LARK_APP_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## Troubleshooting
 
-**Bot doesn't respond**: Check that `im.message.receive_v1` is subscribed and the app is published.
-
-**Permission denied errors**: Verify the relevant scopes are enabled and the app version is published.
-
-**WebSocket not connecting**: Ensure you selected "long connection" mode in Event Subscription, not webhook URL mode.
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Bot not found in Feishu search | Bot capability not enabled | Step 2 |
+| WebSocket connects but no messages | `im.message.receive_v1` not subscribed | Step 4 |
+| Bot found but doesn't respond | App not enabled in admin console | Step 6 |
+| Permission denied errors | Missing scope | Step 3 |

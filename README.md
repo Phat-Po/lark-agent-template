@@ -51,7 +51,41 @@
 
 ---
 
-## 📦 Installation
+## 🚀 Quick Start
+
+![Clone, configure, run — 5 minutes to live](./marketing/screenshots/04-demo.png)
+
+### Step 1 — Feishu App setup (do this first)
+
+Go to [open.feishu.cn](https://open.feishu.cn/) and create an **Enterprise Custom App**, then:
+
+**Credentials** (save these for `.env`):
+- Copy **App ID** and **App Secret** from the Credentials tab
+
+**Add bot capability:**
+- Go to **Add App Capability** → enable **Bot**
+
+**Permissions & Scopes** → add these scopes:
+
+| Scope | Purpose |
+|-------|---------|
+| `im:message` | Receive messages |
+| `im:message:send_as_bot` | Send messages as bot |
+
+**Event Subscription:**
+- Set mode to **Long connection (WebSocket)**
+- Click **Add Event** → add `im.message.receive_v1`
+- This event requires at least one of these permissions to be enabled first: **读取用户发给机器人的单聊消息** or **获取群组中用户@机器人消息** — confirm they show 已开通 in Permissions & Scopes before adding the event
+
+**Publish:**
+- Go to **Version Management** → create and publish a version
+- If you are the enterprise admin, go to [admin.feishu.cn](https://admin.feishu.cn) → **App Management** → find your app → **Enable**
+
+> Full permission list for all built-in tools: [docs/feishu-app-setup.md](docs/feishu-app-setup.md)
+
+---
+
+### Step 2 — Configure
 
 ```bash
 git clone https://github.com/Phat-Po/lark-agent-template.git
@@ -59,14 +93,11 @@ cd lark-agent-template
 cp .env.example .env
 ```
 
-Edit `.env` with your Feishu app credentials and LLM API key.
-See [Feishu App Setup](docs/feishu-app-setup.md) for a step-by-step guide.
+Edit `.env` — fill in your App ID, App Secret, and LLM API key.
 
 ---
 
-## 🚀 Quick Start
-
-![Clone, configure, run — 5 minutes to live](./marketing/screenshots/04-demo.png)
+### Step 3 — Run
 
 **With Docker (recommended):**
 
@@ -74,7 +105,7 @@ See [Feishu App Setup](docs/feishu-app-setup.md) for a step-by-step guide.
 docker compose up --build
 ```
 
-**Without Docker:**
+**Without Docker (Python 3.11+ required):**
 
 ```bash
 python -m venv .venv
@@ -82,6 +113,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn src.main:app --host 0.0.0.0 --port 8080
 ```
+
+Look for this in the logs — it means the bot is live:
+
+```
+Lark Agent Template started
+  Tools: 15 loaded
+connected to wss://msg-frontier.feishu.cn/ws/v2 ...
+```
+
+**Then search for your app name in Feishu and send it a message.**
 
 ---
 
