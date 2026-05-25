@@ -31,3 +31,7 @@ MESSAGE_DEDUP_SECONDS = int(os.environ.get("MESSAGE_DEDUP_SECONDS", "300"))
 
 # --- Search ---
 SEARCH_API_KEY = os.environ.get("SEARCH_API_KEY", "")
+
+# --- Agent behaviour ---
+REQUIRE_WRITE_CONFIRMATION = os.environ.get("REQUIRE_WRITE_CONFIRMATION", "true").lower() in ("1", "true", "yes")
+SYSTEM_PROMPT_FILE = os.environ.get("SYSTEM_PROMPT_FILE", "")
