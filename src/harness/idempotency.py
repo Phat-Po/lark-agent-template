@@ -7,7 +7,7 @@ import json
 import logging
 
 from src import db
-from src.tool_risk import WRITE_TOOL_NAMES  # populated by tool registry at startup
+from src.tool_risk import get_write_tool_names
 
 log = logging.getLogger("lark_agent.idempotency")
 
@@ -61,7 +61,7 @@ def check_write_idempotency(message_id: str, tool_name: str, args_json: str) -> 
     - Prior success -> (False, cached_result)
     - Prior failure -> (True, None) -- allow retry
     """
-    if not message_id or tool_name not in WRITE_TOOL_NAMES:
+    if not message_id or tool_name not in get_write_tool_names():
         return True, None
 
     key = make_write_idempotency_key(message_id, tool_name, args_json)
@@ -81,7 +81,7 @@ def check_write_idempotency(message_id: str, tool_name: str, args_json: str) -> 
 
 def record_write_result(message_id: str, tool_name: str, args_json: str, result: dict) -> None:
     """Record the result of a write tool call for idempotency."""
-    if not message_id or tool_name not in WRITE_TOOL_NAMES:
+    if not message_id or tool_name not in get_write_tool_names():
         return
 
     key = make_write_idempotency_key(message_id, tool_name, args_json)
