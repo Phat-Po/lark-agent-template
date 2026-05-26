@@ -185,6 +185,27 @@ async def get_weather(city: str) -> dict:
 | [`.env.example`](.env.example) | 所有环境变量及注释说明。复制为 `.env` 使用。 |
 | [`AGENTS.md`](AGENTS.md) | 项目治理、技术栈、约束条件。 |
 | [`tasks/STATUS.md`](tasks/STATUS.md) | 当前项目状态、已知问题、验证清单。 |
+| [`update.sh`](update.sh) | 一键更新：拉取最新代码、重建镜像、启动机器人。 |
+
+---
+
+## 更新
+
+新版本发布时，运行：
+
+```bash
+bash update.sh
+```
+
+或手动更新：
+
+```bash
+git pull origin main
+GIT_COMMIT=$(git rev-parse HEAD) docker compose build --no-cache
+docker compose run --rm agent
+```
+
+启动时会显示版本号。如果更新后出错，确认版本号与最新 release 一致。
 
 ---
 

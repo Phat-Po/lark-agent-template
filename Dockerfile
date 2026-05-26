@@ -7,7 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p data && chmod +x entrypoint.sh
+# Bake the git commit hash into the image for stale-code detection
+ARG GIT_COMMIT=unknown
+RUN echo "$GIT_COMMIT" > .git-commit && \
+    mkdir -p data && chmod +x entrypoint.sh
 
 EXPOSE 8080
 

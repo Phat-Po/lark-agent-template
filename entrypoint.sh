@@ -6,6 +6,23 @@
 
 ENV_FILE="/app/.env"
 
+# --- Version check ---
+BAKED_COMMIT=$(cat /app/.git-commit 2>/dev/null || echo "unknown")
+echo ""
+echo "  Version: ${BAKED_COMMIT:0:7}"
+
+# Detect if src/ is volume-mounted (stale code risk)
+if mountpoint -q /app/src 2>/dev/null || grep -q "/app/src" /proc/1/mountinfo 2>/dev/null; then
+    echo ""
+    echo "  WARNING: ./src is mounted as a volume."
+    echo "  The container is running YOUR local code, not the built-in code."
+    echo "  If you see errors, run:"
+    echo "    git pull origin main"
+    echo "    docker compose build --no-cache"
+    echo "    docker compose run --rm agent"
+    echo ""
+fi
+
 prompt_var() {
     local var_name="$1"
     local description="$2"

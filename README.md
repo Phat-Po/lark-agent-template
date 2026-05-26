@@ -185,6 +185,27 @@ Place the file in `src/tools/` and restart — it auto-registers with full harne
 | [`.env.example`](.env.example) | All environment variables with comments. Copy to `.env`. |
 | [`AGENTS.md`](AGENTS.md) | Project governance, tech stack, constraints. |
 | [`tasks/STATUS.md`](tasks/STATUS.md) | Current project state, known issues, validated checklist. |
+| [`update.sh`](update.sh) | One-command update: pulls latest, rebuilds, starts bot. |
+
+---
+
+## Updating
+
+When a new version is released, run:
+
+```bash
+bash update.sh
+```
+
+Or manually:
+
+```bash
+git pull origin main
+GIT_COMMIT=$(git rev-parse HEAD) docker compose build --no-cache
+docker compose run --rm agent
+```
+
+The bot prints its version on startup. If you see errors after updating, make sure the version hash matches the latest release.
 
 ---
 
