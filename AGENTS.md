@@ -35,6 +35,12 @@ Open-source Feishu/Lark AI bot template. Clone, configure environment variables,
 
 Calendar (read/create/delete), Tasks (CRUD), Documents (search/read/create/delete/move), Messaging, Web Search — 15 tools total with auto-harness wrapping.
 
+## Runtime Notes
+
+- Python 3.11+ required. macOS default `python3` is often 3.8 — use Docker.
+- `.env` is not auto-loaded. Without Docker: `set -a && source .env && set +a` before uvicorn.
+- Feishu app setup requires 6 steps — see `docs/feishu-app-setup.md` and `tasks/STATUS.md`.
+
 ## Release Workflow
 
 ```bash
