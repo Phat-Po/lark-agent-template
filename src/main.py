@@ -122,6 +122,20 @@ async def on_startup():
     init_db()
     log.info("startup", extra={"event": "startup", "app_env": APP_ENV, "log_level": LOG_LEVEL})
 
+    if not LARK_APP_ID or not LARK_APP_SECRET:
+        log.error("=" * 50)
+        log.error("MISSING CREDENTIALS — cannot start bot")
+        log.error("  LARK_APP_ID=%s", "SET" if LARK_APP_ID else "EMPTY")
+        log.error("  LARK_APP_SECRET=%s", "SET" if LARK_APP_SECRET else "EMPTY")
+        log.error("")
+        log.error("Fix: edit .env and fill in your Feishu app credentials.")
+        log.error("  See: https://github.com/Phat-Po/lark-agent-template#quick-reference")
+        log.error("=" * 50)
+        raise ValueError(
+            "LARK_APP_ID and LARK_APP_SECRET must be set in .env. "
+            "Copy .env.example to .env and fill in your Feishu app credentials."
+        )
+
     channel = FeishuChannel(
         app_id=LARK_APP_ID,
         app_secret=LARK_APP_SECRET,

@@ -31,12 +31,14 @@ git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 cp .env.example .env
 
-# 2. 配置 — 编辑 .env，填入飞书应用凭证 + LLM API Key
-#    （完整飞书配置清单见 docs/feishu-app-setup.md）
+# 2. 编辑 .env — 填入 LARK_APP_ID、LARK_APP_SECRET 和 LLM_API_KEY
+#    （不填会 crash loop — 完整飞书配置清单见 docs/feishu-app-setup.md）
 
 # 3. 运行
 docker compose up --build
 ```
+
+> **第 2 步是必须的。** 没有有效的凭证，机器人无法启动。如果日志中出现 `FeishuChannel requires app_id and app_secret`，说明你跳过了这一步。
 
 日志中出现以下内容，说明机器人已上线：
 

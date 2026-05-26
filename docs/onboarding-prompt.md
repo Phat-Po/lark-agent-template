@@ -157,6 +157,8 @@ Edit `.env` and fill in:
 Optional:
 | `SEARCH_API_KEY` | SerpAPI key (only if you want web search tool) |
 
+**IMPORTANT**: Do NOT skip this step. The bot will crash-loop without valid `LARK_APP_ID` and `LARK_APP_SECRET`. If you see `FeishuChannel requires app_id and app_secret` in the logs, come back and fill in `.env`.
+
 ## Step 7: Run the Bot
 
 **With Docker (recommended):**
