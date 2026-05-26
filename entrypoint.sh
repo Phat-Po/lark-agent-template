@@ -60,7 +60,7 @@ prompt_var() {
             echo "  Skipped (empty input)"
         fi
     else
-        echo "  No interactive terminal. Set this in .env and restart."
+        NO_TTY=1
     fi
 }
 
@@ -70,6 +70,7 @@ echo "  Lark Agent Template — Credential Check"
 echo "============================================================"
 echo ""
 
+NO_TTY=0
 prompt_var "LARK_APP_ID" "Get from: https://open.feishu.cn/app → Credentials & Basic Info" "$LARK_APP_ID"
 prompt_var "LARK_APP_SECRET" "Same page as App ID" "$LARK_APP_SECRET"
 prompt_var "LLM_API_KEY" "Your LLM provider (OpenAI/DeepSeek/Mimo)" "$LLM_API_KEY"
@@ -89,8 +90,28 @@ fi
 if [ -n "$missing" ]; then
     echo ""
     echo "  Still missing:$missing"
-    echo "  Edit .env manually and restart: docker compose up --build"
     echo ""
+
+    if [ "$NO_TTY" = "1" ]; then
+        echo "  docker compose up doesn't support interactive input."
+        echo "  You have two options:"
+        echo ""
+        echo "  OPTION A — Edit .env manually:"
+        echo "    1. Open .env in a text editor"
+        echo "    2. Fill in LARK_APP_ID and LARK_APP_SECRET"
+        echo "    3. Run: docker compose up --build"
+        echo ""
+        echo "  OPTION B — Use interactive mode:"
+        echo "    1. Press Ctrl+C to stop this"
+        echo "    2. Run: docker compose run --rm agent"
+        echo "    3. Paste your credentials when prompted"
+        echo ""
+    else
+        echo "  Edit .env manually and restart: docker compose up --build"
+        echo ""
+    fi
+
+    echo "  Get credentials: https://open.feishu.cn/app"
     echo "  Full guide: https://github.com/Phat-Po/lark-agent-template"
     echo "              → docs/onboarding-prompt.md"
     echo "============================================================"
