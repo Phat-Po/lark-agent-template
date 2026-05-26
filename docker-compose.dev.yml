@@ -1,0 +1,6 @@
+# Development override — mounts src/ for live code reload.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  agent:
+    volumes:
+      - ./src:/app/src

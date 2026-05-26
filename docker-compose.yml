@@ -6,7 +6,6 @@ services:
       - "8080:8080"
     volumes:
       - ./data:/app/data
-      - ./src:/app/src
       - ./.env:/app/.env
     stdin_open: true
     tty: true
