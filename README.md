@@ -31,24 +31,27 @@ git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 cp .env.example .env
 
-# 2. Edit .env — fill in LARK_APP_ID, LARK_APP_SECRET, and LLM_API_KEY
-#    (the bot will crash-loop without these — see docs/feishu-app-setup.md)
-
-# 3. Run
-docker compose up --build
+# 2. Run (will prompt for credentials if missing)
+docker compose run --rm agent
 ```
 
-> **No credentials yet?** The bot starts anyway — open `http://localhost:8080` in your browser for a setup checklist showing exactly what's missing and where to get it.
-
-Look for this in the logs — your bot is live:
+The entrypoint checks your credentials. If missing, it prompts you to paste them in:
 
 ```
-Lark Agent Template started
-  Tools: 15 loaded
-connected to wss://msg-frontier.feishu.cn/ws/v2 ...
+============================================================
+  Lark Agent Template — Credential Check
+============================================================
+
+  LARK_APP_ID is not set.
+  Get from: https://open.feishu.cn/app → Credentials & Basic Info
+
+  Enter LARK_APP_ID: cli_xxxxxxxxxxxxxxxx
+  Saved to .env
 ```
 
-Search for your app name in Feishu and send it a message.
+After all credentials are set, the bot starts. Search for your app name in Feishu and send it a message.
+
+> **Prefer to edit `.env` manually?** Fill in `LARK_APP_ID`, `LARK_APP_SECRET`, and `LLM_API_KEY`, then `docker compose up --build`.
 
 ---
 

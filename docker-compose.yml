@@ -7,4 +7,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./src:/app/src
-    restart: on-failure:3
+      - ./.env:/app/.env
+    stdin_open: true
+    tty: true
+    restart: "no"

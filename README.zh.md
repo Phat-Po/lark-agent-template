@@ -31,22 +31,27 @@ git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 cp .env.example .env
 
-# 2. 编辑 .env — 填入 LARK_APP_ID、LARK_APP_SECRET 和 LLM_API_KEY
-#    （不填会 crash loop — 完整飞书配置清单见 docs/feishu-app-setup.md）
-
-# 3. 运行
-docker compose up --build
+# 2. 运行（缺少凭证会交互式提示你输入）
+docker compose run --rm agent
 ```
 
-> **还没有凭证？** 机器人照样会启动——打开浏览器访问 `http://localhost:8080`，会看到一个配置清单，告诉你缺什么、去哪里拿。
-
-日志中出现以下内容，说明机器人已上线：
+启动时会检查凭证。如果缺失，会提示你粘贴：
 
 ```
-Lark Agent Template started
-  Tools: 15 loaded
-connected to wss://msg-frontier.feishu.cn/ws/v2 ...
+============================================================
+  Lark Agent Template — Credential Check
+============================================================
+
+  LARK_APP_ID is not set.
+  Get from: https://open.feishu.cn/app → Credentials & Basic Info
+
+  Enter LARK_APP_ID: cli_xxxxxxxxxxxxxxxx
+  Saved to .env
 ```
+
+凭证设置完成后，机器人自动启动。在飞书中搜索你的应用名称并发送消息即可测试。
+
+> **想手动编辑 `.env`？** 填入 `LARK_APP_ID`、`LARK_APP_SECRET` 和 `LLM_API_KEY`，然后 `docker compose up --build`。
 
 在飞书中搜索你的应用名称并发送消息即可测试。
 
