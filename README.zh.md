@@ -38,7 +38,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-> **第 2 步是必须的。** 没有有效的凭证，机器人无法启动。如果日志中出现 `FeishuChannel requires app_id and app_secret`，说明你跳过了这一步。
+> **还没有凭证？** 机器人照样会启动——打开浏览器访问 `http://localhost:8080`，会看到一个配置清单，告诉你缺什么、去哪里拿。
 
 日志中出现以下内容，说明机器人已上线：
 

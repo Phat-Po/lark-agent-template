@@ -38,7 +38,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-> **Step 2 is required.** The bot will not start without valid credentials in `.env`. If you see `FeishuChannel requires app_id and app_secret` in the logs, you skipped this step.
+> **No credentials yet?** The bot starts anyway — open `http://localhost:8080` in your browser for a setup checklist showing exactly what's missing and where to get it.
 
 Look for this in the logs — your bot is live:
 
