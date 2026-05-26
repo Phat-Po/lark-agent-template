@@ -225,6 +225,53 @@ LARK_APP_ID=cli_xxxxxxxxxxxxxxxx
 LARK_APP_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
+## 8. Test the bot
+
+Search for your app name in Feishu and send it a message. Try these tests:
+
+### Basic (works with just im:message scopes)
+
+| Send | Expected |
+|------|----------|
+| `Hello` | Bot responds with a greeting |
+| `What can you do?` | Bot lists its capabilities |
+
+### Calendar (needs calendar:calendar.event:read + calendar:calendar)
+
+| Send | Expected |
+|------|----------|
+| `What's on my calendar today?` | Bot lists today's events |
+| `Create a meeting tomorrow at 3pm called "Team Sync"` | Bot creates a calendar event |
+
+### Tasks (needs task:task:read + task:task:write)
+
+| Send | Expected |
+|------|----------|
+| `What tasks do I have?` | Bot lists your open tasks |
+| `Create a task: buy milk` | Bot creates a Feishu task |
+
+### Documents (needs docx:document:readonly + drive:drive:readonly)
+
+| Send | Expected |
+|------|----------|
+| `Search docs: project plan` | Bot searches your documents |
+| `Create a document called "Meeting Notes"` | Bot creates a new doc |
+
+### Web search (needs SEARCH_API_KEY in .env)
+
+| Send | Expected |
+|------|----------|
+| `Search web: AI news 2026` | Bot returns web search results |
+
+### After adding new scopes
+
+Every time you enable new scopes, you must:
+1. **Create a new version** in Version Management
+2. **Submit and approve** the version
+3. New scopes only take effect after the version is published
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -232,4 +279,6 @@ LARK_APP_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 | Bot not found in Feishu search | Bot capability not enabled | Step 2 |
 | WebSocket connects but no messages | `im.message.receive_v1` not subscribed | Step 4 |
 | Bot found but doesn't respond | App not enabled in admin console | Step 6 |
-| Permission denied errors | Missing scope | Step 3 |
+| Permission denied errors | Missing scope | Step 3 — add the scope, publish new version |
+| Tool returns "scope" error | Scope enabled but version not published | Create + publish a new app version |
+| Crash loop on startup | Missing credentials | Run `docker compose run --rm agent` |

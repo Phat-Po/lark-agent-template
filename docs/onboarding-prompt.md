@@ -182,24 +182,115 @@ Lark Agent Template started
 connected to wss://msg-frontier.feishu.cn/ws/v2 ...
 ```
 
-## Step 8: Test the Bot
+## Step 8: Enable All Permissions
 
-Search for your app name in Feishu and send it a message. Try these:
+Even though the bot is running, the tools won't work without the right permissions. Go to your Feishu app → **Permissions & Scopes** and enable ALL of these:
 
-| Test | Send | Expected |
-|------|------|----------|
-| Basic reply | "Hello" | Bot responds with a greeting |
-| Calendar | "What's on my calendar today?" | Bot reads calendar events |
-| Tasks | "Create a task: buy milk" | Bot creates a Feishu task |
-| Docs | "Search docs: project plan" | Bot searches documents |
-| Web search | "Search: 2026 AI trends" | Bot returns search results (needs SEARCH_API_KEY) |
+### Required for messaging (enable first)
 
-If the bot doesn't respond, check:
-- App is enabled in admin.feishu.cn
-- Event subscription has `im.message.receive_v1` added
-- WebSocket mode is selected (not webhook)
-- .env credentials are correct
-- Bot is running (check terminal/logs for errors)
+| Scope | What it does |
+|-------|-------------|
+| `im:message` | Receive and send messages |
+| `im:message:send_as_bot` | Send messages as bot identity |
+| `im:message:readonly` | Read message content |
+| `im:message.p2p_msg:readonly` | Read direct messages |
+| `im:message.group_at_msg:readonly` | Read group @mentions |
+
+### Calendar tools
+
+| Scope | What it does |
+|-------|-------------|
+| `calendar:calendar` | Access calendars |
+| `calendar:calendar:read` | List calendars |
+| `calendar:calendar:readonly` | Read calendar info |
+| `calendar:calendar.event:read` | List/read events |
+| `calendar:calendar.event:create` | Create events |
+| `calendar:calendar.event:delete` | Delete events |
+| `calendar:calendar.event:update` | Update events |
+| `calendar:calendar.free_busy:read` | Read free/busy status |
+
+### Task tools
+
+| Scope | What it does |
+|-------|-------------|
+| `task:task` | Full task access |
+| `task:task:read` | Read tasks |
+| `task:task:write` | Create/update/delete tasks |
+| `task:tasklist:read` | Read task lists |
+| `task:tasklist:write` | Manage task lists |
+| `task:comment:read` | Read task comments |
+| `task:comment:write` | Write task comments |
+
+### Document & Drive tools
+
+| Scope | What it does |
+|-------|-------------|
+| `docx:document` | Full document access |
+| `docx:document:readonly` | Read documents |
+| `docx:document:create` | Create documents |
+| `docs:document.content:read` | Read document content |
+| `drive:drive` | Full drive access |
+| `drive:drive:readonly` | List/read drive files |
+| `drive:drive.search:readonly` | Search documents |
+| `drive:file:readonly` | Read file metadata |
+| `drive:file:download` | Download files |
+
+### After enabling scopes
+
+1. Go to **Version Management** → **Create a version** → **Submit**
+2. If you are the admin, approve the version
+3. Go to **admin.feishu.cn** → **App Management** → ensure app is **Enabled**
+
+Without publishing a new version, the new scopes won't take effect.
+
+---
+
+## Step 9: Test the Bot
+
+Search for your app name in Feishu and send it a message. Try these tests in order:
+
+### Basic (no extra permissions needed)
+
+| Send | Expected result |
+|------|----------------|
+| `Hello` | Bot responds with a greeting |
+| `What can you do?` | Bot lists its capabilities |
+
+### Calendar (needs calendar scopes)
+
+| Send | Expected result |
+|------|----------------|
+| `What's on my calendar today?` | Bot reads and lists today's events |
+| `Create a meeting tomorrow at 3pm called "Team Sync"` | Bot creates a calendar event |
+
+### Tasks (needs task scopes)
+
+| Send | Expected result |
+|------|----------------|
+| `What tasks do I have?` | Bot lists your open tasks |
+| `Create a task: buy milk` | Bot creates a Feishu task |
+
+### Documents (needs doc/drive scopes)
+
+| Send | Expected result |
+|------|----------------|
+| `Search docs: project plan` | Bot searches your documents |
+| `Create a document called "Meeting Notes"` | Bot creates a new doc |
+
+### Web search (needs SEARCH_API_KEY in .env)
+
+| Send | Expected result |
+|------|----------------|
+| `Search web: AI news 2026` | Bot returns web search results |
+
+### If a test fails
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Bot doesn't reply at all | Event subscription missing | Step 4 — add `im.message.receive_v1` |
+| "permission denied" or "scope" error | Missing a permission scope | Go back to Step 8, add the missing scope, publish new version |
+| "API key not configured" | SEARCH_API_KEY not set | Add to `.env`, restart bot |
+| Bot replies but tool fails silently | Scope enabled but not published | Create and publish a new app version |
 
 ---
 
@@ -210,7 +301,8 @@ If the bot doesn't respond, check:
 | Bot not found in search | Bot capability not enabled | Step 2 |
 | WebSocket connects but no messages | Event not subscribed | Step 4 |
 | Bot found but doesn't respond | App not enabled in admin | Step 5 |
-| Permission denied errors | Missing scope | Step 3 — add the missing scope |
+| Permission denied errors | Missing scope | Step 8 — add the missing scope, publish new version |
 | "Python version" errors | System python is 3.8 | Use Docker, or install Python 3.11+ |
 | "Module not found" errors | Dependencies not installed | Run `pip install -r requirements.txt` |
+| Crash loop on startup | Missing credentials | Run `docker compose run --rm agent` (interactive setup) |
 ```
