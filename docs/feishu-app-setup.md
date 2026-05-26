@@ -31,33 +31,159 @@ Without this step, the bot won't appear in Feishu search.
 
 ## 3. Add permissions
 
-Go to **Permissions & Scopes** and add scopes for the tools you want to use.
+Go to **Permissions & Scopes** and enable the scopes below. These cover ALL built-in tools (calendar, tasks, docs, drive, messaging, search).
 
-### Always required
+### Quick list (copy-paste each name into the search box)
 
-| Scope | Description |
-|-------|-------------|
-| `im:message` | Receive messages |
-| `im:message:send_as_bot` | Send messages as bot |
+**Messaging (required):**
+- `im:message`
+- `im:message:send_as_bot`
+- `im:message:readonly`
+- `im:message.group_at_msg:readonly`
+- `im:message.p2p_msg:readonly`
+- `im:resource`
+- `im:chat`
+- `im:chat:read`
+- `im:chat:readonly`
+- `im:chat.members:read`
+- `im:chat.members:write_only`
 
-### Calendar tool
+**Calendar:**
+- `calendar:calendar`
+- `calendar:calendar.event:create`
+- `calendar:calendar.event:delete`
+- `calendar:calendar.event:read`
+- `calendar:calendar.event:reply`
+- `calendar:calendar.event:update`
+- `calendar:calendar.free_busy:read`
+- `calendar:calendar:create`
+- `calendar:calendar:delete`
+- `calendar:calendar:read`
+- `calendar:calendar:readonly`
+- `calendar:calendar:subscribe`
+- `calendar:calendar:update`
+- `calendar:calendar.acl:create`
+- `calendar:calendar.acl:delete`
+- `calendar:calendar.acl:read`
 
-| Scope | Description |
-|-------|-------------|
-| `calendar:calendar` | Read/write calendars |
+**Tasks:**
+- `task:task`
+- `task:task:read`
+- `task:task:readonly`
+- `task:task:write`
+- `task:task:writeonly`
+- `task:tasklist:read`
+- `task:tasklist:write`
+- `task:comment`
+- `task:comment:read`
+- `task:comment:readonly`
+- `task:comment:write`
+- `task:custom_field:read`
+- `task:custom_field:write`
+- `task:section:read`
+- `task:section:write`
+- `task:attachment:read`
+- `task:attachment:write`
 
-### Docs tool
+**Documents & Drive:**
+- `docx:document`
+- `docx:document:create`
+- `docx:document:readonly`
+- `docx:document:write_only`
+- `docs:document.content:read`
+- `docs:document:copy`
+- `docs:document:export`
+- `docs:document:import`
+- `drive:drive`
+- `drive:drive:readonly`
+- `drive:drive.metadata:readonly`
+- `drive:drive.search:readonly`
+- `drive:file`
+- `drive:file:readonly`
+- `drive:file:download`
+- `drive:file:upload`
 
-| Scope | Description |
-|-------|-------------|
-| `docs:doc` | Read/write documents |
-| `drive:drive` | Access Drive |
+**Other:**
+- `contact:user.base:readonly`
+- `search:docs:read`
 
-### Tasks tool
+### Full JSON (for batch import or reference)
 
-| Scope | Description |
-|-------|-------------|
-| `task:task` | Read/write tasks |
+<details>
+<summary>Click to expand full scope JSON</summary>
+
+```json
+{
+  "scopes": {
+    "tenant": [
+      "calendar:calendar",
+      "calendar:calendar.acl:create",
+      "calendar:calendar.acl:delete",
+      "calendar:calendar.acl:read",
+      "calendar:calendar.event:create",
+      "calendar:calendar.event:delete",
+      "calendar:calendar.event:read",
+      "calendar:calendar.event:reply",
+      "calendar:calendar.event:update",
+      "calendar:calendar.free_busy:read",
+      "calendar:calendar:create",
+      "calendar:calendar:delete",
+      "calendar:calendar:read",
+      "calendar:calendar:readonly",
+      "calendar:calendar:subscribe",
+      "calendar:calendar:update",
+      "contact:user.base:readonly",
+      "docs:document.content:read",
+      "docs:document:copy",
+      "docs:document:export",
+      "docs:document:import",
+      "docx:document",
+      "docx:document:create",
+      "docx:document:readonly",
+      "docx:document:write_only",
+      "drive:drive",
+      "drive:drive.metadata:readonly",
+      "drive:drive.search:readonly",
+      "drive:drive:readonly",
+      "drive:file",
+      "drive:file:download",
+      "drive:file:readonly",
+      "drive:file:upload",
+      "im:chat",
+      "im:chat.members:read",
+      "im:chat.members:write_only",
+      "im:chat:read",
+      "im:chat:readonly",
+      "im:message",
+      "im:message.group_at_msg:readonly",
+      "im:message.p2p_msg:readonly",
+      "im:message:readonly",
+      "im:message:send_as_bot",
+      "im:resource",
+      "search:docs:read",
+      "task:attachment:read",
+      "task:attachment:write",
+      "task:comment",
+      "task:comment:read",
+      "task:comment:readonly",
+      "task:comment:write",
+      "task:custom_field:read",
+      "task:custom_field:write",
+      "task:section:read",
+      "task:section:write",
+      "task:task",
+      "task:task:read",
+      "task:task:readonly",
+      "task:task:write",
+      "task:task:writeonly",
+      "task:tasklist:read",
+      "task:tasklist:write"
+    ]
+  }
+}
+```
+
+</details>
 
 ## 4. Configure event subscription
 
