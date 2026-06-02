@@ -34,3 +34,31 @@
 
 - `README.md` — Quick Start now includes full Feishu setup inline
 - `docs/feishu-app-setup.md` — full checklist + troubleshooting table
+
+---
+
+## [2026-06-02] | v1.1.0 upgrade planned & handed off (not yet executed)
+
+**Done this session:**
+- Read the full upgrade brief (`tasks/UPGRADE-2026-06-from-wpd.md`) and investigated both the template and the upstream WPD repo end-to-end (read-only).
+- Produced a decision-complete, execution-ready task doc: **`tasks/EXECUTE-v1.1.0-handoff.md`** (the next agent executes from this).
+- No source code changed.
+
+**Key findings (resolved unknowns so the next agent need not re-investigate):**
+- Both repos use the same `FeishuChannel` abstraction → the upstream SDK monkey-patches (`_patch_ws_client_loop`, CARD-frame patch) and `channel.on("cardAction")` port cleanly.
+- This repo creates `channel` lazily inside `on_startup()` (setup-mode) → patches + cardAction registration must run inside startup after channel creation; preserve setup-mode.
+- Template's `pending_actions` table is single-slot (PK chat_id+sender) → must migrate to upstream's multi-row schema keyed by `action_id` (+ `request_text`) for persistent button-confirm.
+- Template guards writes at the agent level (no `confirmed_by_user` in tool schemas) → port the DB-backed store + button card, but do NOT add `confirmed_by_user` and do NOT port member/group resolution (no social graph).
+- Host `python3` is 3.8; use `/opt/homebrew/bin/python3.11` venv for tests.
+
+**Current state:**
+- v1.0.0 on `main`, repo otherwise stable. Planning docs committed as a snapshot. No branch created yet.
+
+**Next steps:**
+1. Execute `tasks/EXECUTE-v1.1.0-handoff.md` Step 0 → Step 8 on branch `feat/v1.1-cards-confirm`.
+2. v1.1.0 scope = 🟢 cards + SDK fixes + DB-persisted button confirmation + timeout/errors. Defer Bitable/OAuth/scheduled to v1.2.
+3. Stop and ask the operator before any `git push` / `gh release`.
+
+**Decisions / notes:**
+- `BOT_DISPLAY_NAME` default = `"Lark Agent"`.
+- Upstream repo is READ-ONLY reference — never modify it.
