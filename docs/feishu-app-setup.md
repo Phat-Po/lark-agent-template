@@ -31,86 +31,9 @@ Without this step, the bot won't appear in Feishu search.
 
 ## 3. Add permissions
 
-Go to **Permissions & Scopes** and enable the scopes below. These cover ALL built-in tools (calendar, tasks, docs, drive, messaging, search).
+Go to **Permissions & Scopes** → click **Batch Import/Export Permissions** → paste the JSON below → confirm import.
 
-### Quick list (copy-paste each name into the search box)
-
-**Messaging (required):**
-- `im:message`
-- `im:message:send_as_bot`
-- `im:message:readonly`
-- `im:message.group_at_msg:readonly`
-- `im:message.p2p_msg:readonly`
-- `im:resource`
-- `im:chat`
-- `im:chat:read`
-- `im:chat:readonly`
-- `im:chat.members:read`
-- `im:chat.members:write_only`
-
-**Calendar:**
-- `calendar:calendar`
-- `calendar:calendar.event:create`
-- `calendar:calendar.event:delete`
-- `calendar:calendar.event:read`
-- `calendar:calendar.event:reply`
-- `calendar:calendar.event:update`
-- `calendar:calendar.free_busy:read`
-- `calendar:calendar:create`
-- `calendar:calendar:delete`
-- `calendar:calendar:read`
-- `calendar:calendar:readonly`
-- `calendar:calendar:subscribe`
-- `calendar:calendar:update`
-- `calendar:calendar.acl:create`
-- `calendar:calendar.acl:delete`
-- `calendar:calendar.acl:read`
-
-**Tasks:**
-- `task:task`
-- `task:task:read`
-- `task:task:readonly`
-- `task:task:write`
-- `task:task:writeonly`
-- `task:tasklist:read`
-- `task:tasklist:write`
-- `task:comment`
-- `task:comment:read`
-- `task:comment:readonly`
-- `task:comment:write`
-- `task:custom_field:read`
-- `task:custom_field:write`
-- `task:section:read`
-- `task:section:write`
-- `task:attachment:read`
-- `task:attachment:write`
-
-**Documents & Drive:**
-- `docx:document`
-- `docx:document:create`
-- `docx:document:readonly`
-- `docx:document:write_only`
-- `docs:document.content:read`
-- `docs:document:copy`
-- `docs:document:export`
-- `docs:document:import`
-- `drive:drive`
-- `drive:drive:readonly`
-- `drive:drive.metadata:readonly`
-- `drive:drive.search:readonly`
-- `drive:file`
-- `drive:file:readonly`
-- `drive:file:download`
-- `drive:file:upload`
-
-**Other:**
-- `contact:user.base:readonly`
-- `search:docs:read`
-
-### Full JSON (for batch import or reference)
-
-<details>
-<summary>Click to expand full scope JSON</summary>
+These cover ALL built-in tools (calendar, tasks, docs, drive, messaging, search):
 
 ```json
 {
@@ -183,7 +106,7 @@ Go to **Permissions & Scopes** and enable the scopes below. These cover ALL buil
 }
 ```
 
-</details>
+After importing, all scopes will show as pending. When you proceed to the next step (event subscription), Feishu will require some scopes to be enabled first — follow the prompts.
 
 ## 4. Configure event subscription
 

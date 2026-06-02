@@ -31,86 +31,9 @@
 
 ## 3. 添加权限
 
-进入 **权限管理**，启用以下权限。这些覆盖所有内置工具（日历、任务、文档、云空间、消息、搜索）。
+进入 **权限管理** → 点击 **批量导入/导出权限** → 粘贴以下 JSON → 确认导入。
 
-### 快速列表（将每个名称复制粘贴到搜索框中）
-
-**消息（必填）：**
-- `im:message`
-- `im:message:send_as_bot`
-- `im:message:readonly`
-- `im:message.group_at_msg:readonly`
-- `im:message.p2p_msg:readonly`
-- `im:resource`
-- `im:chat`
-- `im:chat:read`
-- `im:chat:readonly`
-- `im:chat.members:read`
-- `im:chat.members:write_only`
-
-**日历：**
-- `calendar:calendar`
-- `calendar:calendar.event:create`
-- `calendar:calendar.event:delete`
-- `calendar:calendar.event:read`
-- `calendar:calendar.event:reply`
-- `calendar:calendar.event:update`
-- `calendar:calendar.free_busy:read`
-- `calendar:calendar:create`
-- `calendar:calendar:delete`
-- `calendar:calendar:read`
-- `calendar:calendar:readonly`
-- `calendar:calendar:subscribe`
-- `calendar:calendar:update`
-- `calendar:calendar.acl:create`
-- `calendar:calendar.acl:delete`
-- `calendar:calendar.acl:read`
-
-**任务：**
-- `task:task`
-- `task:task:read`
-- `task:task:readonly`
-- `task:task:write`
-- `task:task:writeonly`
-- `task:tasklist:read`
-- `task:tasklist:write`
-- `task:comment`
-- `task:comment:read`
-- `task:comment:readonly`
-- `task:comment:write`
-- `task:custom_field:read`
-- `task:custom_field:write`
-- `task:section:read`
-- `task:section:write`
-- `task:attachment:read`
-- `task:attachment:write`
-
-**文档和云空间：**
-- `docx:document`
-- `docx:document:create`
-- `docx:document:readonly`
-- `docx:document:write_only`
-- `docs:document.content:read`
-- `docs:document:copy`
-- `docs:document:export`
-- `docs:document:import`
-- `drive:drive`
-- `drive:drive:readonly`
-- `drive:drive.metadata:readonly`
-- `drive:drive.search:readonly`
-- `drive:file`
-- `drive:file:readonly`
-- `drive:file:download`
-- `drive:file:upload`
-
-**其他：**
-- `contact:user.base:readonly`
-- `search:docs:read`
-
-### 完整 JSON（用于批量导入或参考）
-
-<details>
-<summary>点击展开完整权限 JSON</summary>
+这些覆盖所有内置工具（日历、任务、文档、云空间、消息、搜索）：
 
 ```json
 {
@@ -183,7 +106,7 @@
 }
 ```
 
-</details>
+导入后，所有权限会显示为待启用状态。继续下一步（事件订阅）时，飞书会自动要求你先启用部分权限，按提示操作即可。
 
 ## 4. 配置事件订阅
 
