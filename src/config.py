@@ -32,6 +32,9 @@ MESSAGE_DEDUP_SECONDS = int(os.environ.get("MESSAGE_DEDUP_SECONDS", "300"))
 # --- Search ---
 SEARCH_API_KEY = os.environ.get("SEARCH_API_KEY", "")
 
+# --- Bot display ---
+BOT_DISPLAY_NAME = os.environ.get("BOT_DISPLAY_NAME", "Lark Agent")
+
 # --- Agent behaviour ---
 REQUIRE_WRITE_CONFIRMATION = os.environ.get("REQUIRE_WRITE_CONFIRMATION", "true").lower() in ("1", "true", "yes")
 SYSTEM_PROMPT_FILE = os.environ.get("SYSTEM_PROMPT_FILE", "")

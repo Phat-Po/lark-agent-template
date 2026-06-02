@@ -69,6 +69,7 @@ docker compose run --rm agent
 | LLM 提供商无关 | yes | 仅 OpenAI | 通过插件 |
 | 模板化（克隆即用） | yes | no | no |
 | 对话记忆 | 会话 + 持久化 | yes | 通过插件 |
+| 交互式卡片 (CardKit v2) | yes | no | no |
 | Docker 部署 | yes | yes | yes |
 
 ---
@@ -82,6 +83,7 @@ docker compose run --rm agent
 - **LLM 提供商无关** — 支持任何 OpenAI 兼容 API（OpenAI、DeepSeek、Mimo、Ollama 等）
 - **15 个内置工具** — 日历、任务、文档、消息、网页搜索
 - **写入确认** — 危险操作需要用户确认后才执行
+- **交互式卡片** — 回复以 CardKit v2 卡片渲染（彩色标题 + Markdown）；受保护写操作显示确认/取消按钮；失败时回退到纯文本
 
 ---
 
@@ -121,6 +123,7 @@ docker compose run --rm agent
 | `MAX_HISTORY_ROUNDS` | `20` | 上下文中的最大对话轮数 |
 | `MAX_TOKEN_BUDGET` | `3000` | LLM 响应的最大 token 数 |
 | `REQUIRE_WRITE_CONFIRMATION` | `true` | 写入/危险操作前是否需要用户确认 |
+| `BOT_DISPLAY_NAME` | `Lark Agent` | 卡片标题中显示的机器人名称 |
 | `SEARCH_API_KEY` | — | SerpAPI Key（可选，用于网页搜索） |
 | `DB_PATH` | `data/agent.db` | SQLite 数据库路径 |
 | `LOG_LEVEL` | `INFO` | 日志级别 |

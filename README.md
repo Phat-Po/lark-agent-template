@@ -67,6 +67,7 @@ After all credentials are set, the bot starts. Search for your app name in Feish
 | Provider-agnostic LLM | yes | OpenAI only | via plugins |
 | Template (clone & go) | yes | no | no |
 | Conversation memory | session + persistent | yes | via plugins |
+| Interactive cards (CardKit v2) | yes | no | no |
 | Docker deployment | yes | yes | yes |
 
 ---
@@ -82,6 +83,7 @@ After all credentials are set, the bot starts. Search for your app name in Feish
 - **Provider-agnostic** — any OpenAI-compatible API (OpenAI, DeepSeek, Mimo, Ollama, etc.)
 - **15 built-in tools** — calendar, tasks, docs, drive, messaging, web search
 - **Write confirmation** — destructive tools require user approval before executing
+- **Interactive cards** — replies render as CardKit v2 cards with colored headers; confirm/cancel buttons for protected writes; text fallback on failure
 
 ---
 
@@ -121,6 +123,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `MAX_HISTORY_ROUNDS` | `20` | Max conversation turns in context |
 | `MAX_TOKEN_BUDGET` | `3000` | Max tokens in LLM response |
 | `REQUIRE_WRITE_CONFIRMATION` | `true` | Ask user before write/destructive tools |
+| `BOT_DISPLAY_NAME` | `Lark Agent` | Display name shown in card headers |
 | `SEARCH_API_KEY` | — | SerpAPI key (optional, for web search) |
 | `DB_PATH` | `data/agent.db` | SQLite database path |
 | `LOG_LEVEL` | `INFO` | Logging level |

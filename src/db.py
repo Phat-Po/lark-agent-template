@@ -93,14 +93,16 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_tool_trace ON tool_invocations(trace_id);
 
         CREATE TABLE IF NOT EXISTS pending_actions (
+            action_id TEXT PRIMARY KEY,
             chat_id TEXT NOT NULL,
             sender_open_id TEXT NOT NULL,
             tool_name TEXT NOT NULL,
             arguments_json TEXT NOT NULL,
+            request_text TEXT DEFAULT '',
             created_at REAL NOT NULL,
-            expires_at REAL NOT NULL,
-            PRIMARY KEY (chat_id, sender_open_id)
+            expires_at REAL NOT NULL
         );
+        CREATE INDEX IF NOT EXISTS idx_pending_chat_sender ON pending_actions(chat_id, sender_open_id);
 
         CREATE TABLE IF NOT EXISTS processed_messages (
             message_id TEXT PRIMARY KEY,
@@ -138,6 +140,32 @@ def init_db():
         conn.execute("ALTER TABLE conversations ADD COLUMN sender_open_id TEXT DEFAULT ''")
     except sqlite3.OperationalError:
         pass
+    # Migrate pending_actions from single-slot (PK chat_id+sender) to multi-row
+    # (PK action_id) so several un-confirmed proposals can coexist.
+    try:
+        info = conn.execute("PRAGMA table_info(pending_actions)").fetchall()
+        pk_cols = [r[1] for r in info if r[5] > 0]
+        col_names = [r[1] for r in info]
+        needs_rebuild = pk_cols != ["action_id"] or "request_text" not in col_names
+        if needs_rebuild:
+            conn.executescript(
+                """
+                DROP TABLE IF EXISTS pending_actions;
+                CREATE TABLE pending_actions (
+                    action_id TEXT PRIMARY KEY,
+                    chat_id TEXT NOT NULL,
+                    sender_open_id TEXT NOT NULL,
+                    tool_name TEXT NOT NULL,
+                    arguments_json TEXT NOT NULL,
+                    request_text TEXT DEFAULT '',
+                    created_at REAL NOT NULL,
+                    expires_at REAL NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_pending_chat_sender ON pending_actions(chat_id, sender_open_id);
+                """
+            )
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
 
 
@@ -151,38 +179,36 @@ def save_pending_action(
     created_at: float,
     expires_at: float,
     *,
-    allow_overwrite: bool = False,
+    allow_overwrite: bool = False,  # retained for signature compat; unused
+    action_id: str = "",
+    request_text: str = "",
 ) -> None:
+    """Insert a pending action keyed by action_id. Multiple may coexist per user."""
     conn = get_conn()
-    if allow_overwrite:
-        conn.execute(
-            """
-            INSERT INTO pending_actions (chat_id, sender_open_id, tool_name, arguments_json, created_at, expires_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT(chat_id, sender_open_id) DO UPDATE SET
-                tool_name = excluded.tool_name,
-                arguments_json = excluded.arguments_json,
-                created_at = excluded.created_at,
-                expires_at = excluded.expires_at
-            """,
-            (chat_id, sender_open_id, tool_name, arguments_json, created_at, expires_at),
-        )
-    else:
-        conn.execute(
-            """
-            INSERT INTO pending_actions (chat_id, sender_open_id, tool_name, arguments_json, created_at, expires_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (chat_id, sender_open_id, tool_name, arguments_json, created_at, expires_at),
-        )
+    conn.execute(
+        """
+        INSERT INTO pending_actions
+            (action_id, chat_id, sender_open_id, tool_name, arguments_json, request_text, created_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(action_id) DO UPDATE SET
+            tool_name = excluded.tool_name,
+            arguments_json = excluded.arguments_json,
+            request_text = excluded.request_text,
+            created_at = excluded.created_at,
+            expires_at = excluded.expires_at
+        """,
+        (action_id, chat_id, sender_open_id, tool_name, arguments_json, request_text, created_at, expires_at),
+    )
     conn.commit()
 
 
 def load_pending_action(chat_id: str, sender_open_id: str) -> dict | None:
+    """Return the most recently created pending action for this user, if any."""
     conn = get_conn()
     row = conn.execute(
-        "SELECT tool_name, arguments_json, created_at, expires_at "
-        "FROM pending_actions WHERE chat_id = ? AND sender_open_id = ?",
+        "SELECT tool_name, arguments_json, request_text, created_at, expires_at, action_id "
+        "FROM pending_actions WHERE chat_id = ? AND sender_open_id = ? "
+        "ORDER BY created_at DESC LIMIT 1",
         (chat_id, sender_open_id),
     ).fetchone()
     if row is None:
@@ -190,29 +216,58 @@ def load_pending_action(chat_id: str, sender_open_id: str) -> dict | None:
     return {
         "tool_name": row["tool_name"],
         "arguments_json": row["arguments_json"],
+        "request_text": row["request_text"] or "",
+        "created_at": row["created_at"],
+        "expires_at": row["expires_at"],
+        "action_id": row["action_id"] or "",
+    }
+
+
+def take_pending_action_db(chat_id: str, sender_open_id: str) -> dict | None:
+    """Atomically delete and return the most recent pending action, or None.
+
+    Uses SELECT + DELETE in a single transaction for SQLite >= 3.24 compat.
+    """
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT action_id, tool_name, arguments_json, request_text, created_at, expires_at "
+        "FROM pending_actions WHERE chat_id = ? AND sender_open_id = ? "
+        "ORDER BY created_at DESC LIMIT 1",
+        (chat_id, sender_open_id),
+    ).fetchone()
+    if row is None:
+        return None
+    conn.execute("DELETE FROM pending_actions WHERE action_id = ?", (row["action_id"],))
+    conn.commit()
+    return {
+        "tool_name": row["tool_name"],
+        "arguments_json": row["arguments_json"],
+        "request_text": row["request_text"] or "",
         "created_at": row["created_at"],
         "expires_at": row["expires_at"],
     }
 
 
-def take_pending_action_db(chat_id: str, sender_open_id: str) -> dict | None:
-    """Atomically delete and return the pending action, or None if absent."""
+def take_pending_action_by_action_id(action_id: str) -> dict | None:
+    """Atomically delete and return a pending action by action_id."""
+    if not action_id:
+        return None
     conn = get_conn()
     row = conn.execute(
-        "SELECT tool_name, arguments_json, created_at, expires_at "
-        "FROM pending_actions WHERE chat_id = ? AND sender_open_id = ?",
-        (chat_id, sender_open_id),
+        "SELECT chat_id, sender_open_id, tool_name, arguments_json, request_text, created_at, expires_at "
+        "FROM pending_actions WHERE action_id = ?",
+        (action_id,),
     ).fetchone()
     if row is None:
         return None
-    conn.execute(
-        "DELETE FROM pending_actions WHERE chat_id = ? AND sender_open_id = ?",
-        (chat_id, sender_open_id),
-    )
+    conn.execute("DELETE FROM pending_actions WHERE action_id = ?", (action_id,))
     conn.commit()
     return {
+        "chat_id": row["chat_id"],
+        "sender_open_id": row["sender_open_id"],
         "tool_name": row["tool_name"],
         "arguments_json": row["arguments_json"],
+        "request_text": row["request_text"] or "",
         "created_at": row["created_at"],
         "expires_at": row["expires_at"],
     }
@@ -224,6 +279,21 @@ def delete_pending_action(chat_id: str, sender_open_id: str) -> None:
         "DELETE FROM pending_actions WHERE chat_id = ? AND sender_open_id = ?",
         (chat_id, sender_open_id),
     )
+    conn.commit()
+
+
+def sweep_expired_pending_actions(cutoff: float) -> None:
+    """Delete pending actions whose expires_at is older than cutoff."""
+    conn = get_conn()
+    conn.execute("DELETE FROM pending_actions WHERE expires_at < ?", (cutoff,))
+    conn.commit()
+
+
+def delete_pending_action_by_action_id(action_id: str) -> None:
+    if not action_id:
+        return
+    conn = get_conn()
+    conn.execute("DELETE FROM pending_actions WHERE action_id = ?", (action_id,))
     conn.commit()
 
 

@@ -62,3 +62,34 @@
 **Decisions / notes:**
 - `BOT_DISPLAY_NAME` default = `"Lark Agent"`.
 - Upstream repo is READ-ONLY reference — never modify it.
+
+---
+
+## [2026-06-02] | v1.1.0 implemented (pending push)
+
+**Status**: Code complete, tests green (36/36), awaiting operator approval to push.
+
+**New features:**
+- **Interactive Feishu cards** — replies render as CardKit v2 cards (colored header + markdown). Text fallback on card send failure.
+- **lark-oapi SDK bug workarounds** — `_patch_ws_client_loop()` fixes uvicorn loop crash; `_patch_ws_client_card_handler()` fixes dropped CARD messages.
+- **DB-persisted button confirmation** — protected writes show 确认/取消 buttons. Pending action stored in SQLite by `action_id` (survives restart, multiple pending coexist, 30-min expiry).
+- **Timeout + error sanitization** — `with_timeout()` (15s) wraps Feishu API calls. Failures return sanitized messages.
+
+**Files changed:**
+- `src/card_builder.py` — new: build_reply_card, build_confirm_card, build_error_card
+- `src/action_policy.py` — new: generic pending-action store (no social graph)
+- `src/harness/timeout.py` — new: async timeout wrapper
+- `src/config.py` — added BOT_DISPLAY_NAME
+- `src/db.py` — migrated pending_actions to multi-row schema (action_id PK)
+- `src/agent.py` — DB-backed confirm flow, sanitize_reply, _build_confirm_text
+- `src/main.py` — card send path, SDK patches, on_card_action handler
+- `src/tools/messaging.py` — timeout-wrapped send_message
+- `tests/test_confirm.py` — new: persistence, timeout, card builder tests
+- Docs: README.md, README.zh.md, architecture.md, adding-tools.md, .env.example
+
+**Deferred to v1.2:**
+- Bitable tools + User OAuth + scheduled-automation (per handoff doc scope decision).
+
+**Gotchas:**
+- lark-oapi>=1.4.0 required for `lark_oapi.channel.card.builder.new_card` import.
+- The two SDK monkey-patches are logged at startup; if either shows `sdk_patch_MISSING`, check lark-oapi version.
