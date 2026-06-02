@@ -65,8 +65,10 @@ docker compose up --build
 
 ## Hot reload during development
 
-The `docker-compose.yml` mounts `./src` into the container, so Python file changes are visible immediately. Restart the container to pick them up:
+Use the dev override to mount `./src` into the container for live reload:
 
 ```
-docker compose restart agent
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
+
+Python file changes are visible immediately. Without the dev override, you must rebuild: `docker compose up --build`.

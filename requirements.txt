@@ -2,10 +2,8 @@ fastapi>=0.110.0
 uvicorn>=0.29.0
 lark-oapi>=1.4.0
 openai>=1.30.0
-apscheduler>=3.10.0
 httpx>=0.27.0
 python-dotenv>=0.21.0
-pyyaml>=6.0
 
 # Optional: only needed for the web_search tool
 # google-search-results>=2.4.2  # SerpAPI client

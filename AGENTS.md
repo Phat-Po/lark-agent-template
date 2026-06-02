@@ -7,7 +7,7 @@ Open-source Feishu/Lark AI bot template. Clone, configure environment variables,
 ## GitHub
 
 - **Repo**: https://github.com/Phat-Po/lark-agent-template
-- **Release**: v1.0.0 (2026-05-26)
+- **Release**: v1.1.0 (2026-06-02)
 - **Branch**: main (only)
 
 ## Tech Stack

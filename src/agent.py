@@ -154,9 +154,6 @@ async def chat(
     return reply
 
 
-handle_message = chat
-
-
 def _is_confirmation(text: str) -> bool:
     return bool(CONFIRM_RE.match(text or ""))
 

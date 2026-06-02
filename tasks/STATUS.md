@@ -3,8 +3,8 @@
 ## Current State
 
 **Status**: Stable / Maintain
-**Last active**: 2026-05-26
-**Release**: v1.0.0 (published on GitHub)
+**Last active**: 2026-06-02
+**Release**: v1.1.0 (pending push)
 
 ## What works
 
