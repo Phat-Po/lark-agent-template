@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg)](https://www.docker.com/)
+[![lark-oapi](https://img.shields.io/badge/lark--oapi-1.4+-0088FF.svg)](https://github.com/larksuite/oapi-sdk-python)
 
 <pre>
 ██       ████    ███████    ██
@@ -13,17 +14,45 @@
 ██████  ██   ██     ██      ██
 </pre>
 
-**A ready-to-use Feishu/Lark AI agent with tool calling, observability harness, and extensible plugin system.**
+**A production-ready Feishu/Lark AI agent with tool calling, interactive cards, and observability — clone, configure, run in 5 minutes.**
 
-[中文文档](README.zh.md)
+📖 [查看简体中文文档](README.zh.md)
 
 ---
 
-## Get Started in 5 Minutes
+## Why Lark Agent Template?
 
-> **First time?** Paste [this prompt](docs/onboarding-prompt.md) into ChatGPT, Claude, Cursor, or any AI assistant. It will guide you through every step — from creating a Feishu app to a running bot — and skip steps you've already done.
+Building a Feishu bot that actually *does things* — managing calendars, creating tasks, searching docs — usually means hundreds of lines of boilerplate: API integration, error handling, conversation memory, metrics, idempotency checks. This template gives you all of that out of the box.
 
-**Three-step overview:**
+| | Lark Agent Template | Feishu-OpenAI | nonebot2-feishu |
+|---|:---:|:---:|:---:|
+| **Language** | Python 3.11+ | Go | Python |
+| **Agent loop with tool calling** | ✅ built-in | ❌ | ❌ |
+| **Auto-harness (metrics, tracing, idempotency)** | ✅ every tool | ❌ | ❌ |
+| **Interactive cards (CardKit v2)** | ✅ with button confirm | ✅ rich cards | ❌ |
+| **Provider-agnostic LLM** | ✅ any OpenAI-compatible | ❌ OpenAI only | via plugins |
+| **DB-persisted confirmation** | ✅ survives restart | ❌ | ❌ |
+| **Observability dashboard** | ✅ built-in | ❌ | ❌ |
+| **Clone & go** | ✅ 5 min setup | ❌ config-heavy | ❌ framework learning curve |
+| **License** | MIT | GPL-3.0 | MIT |
+
+---
+
+## ✨ Features
+
+- 🤖 **Agent loop** — LLM decides when to call tools, results feed back for multi-step reasoning
+- 🎴 **Interactive cards** — replies render as CardKit v2 cards with colored headers and markdown
+- ✅ **Button confirmation** — protected writes show 确认/取消 buttons; persisted in SQLite, survives restart
+- 🔧 **15 built-in tools** — calendar, tasks, docs, drive, messaging, web search
+- 📊 **Observability harness** — metrics, tracing, idempotency, schema validation — auto-wraps every tool
+- 🧠 **Memory** — session history + per-user persistent long-term memory
+- 🔌 **Provider-agnostic** — any OpenAI-compatible API (OpenAI, DeepSeek, Mimo, Ollama, etc.)
+- 🛡️ **Timeout + error handling** — 15s timeout on API calls, sanitized error messages, text fallback on card failure
+- 🐳 **Docker-ready** — one command to build and run
+
+---
+
+## 📦 Installation
 
 ```bash
 # 1. Clone
@@ -31,11 +60,11 @@ git clone https://github.com/Phat-Po/lark-agent-template.git
 cd lark-agent-template
 cp .env.example .env
 
-# 2. Run (will prompt for credentials if missing)
+# 2. Run (interactive credential prompt if missing)
 docker compose run --rm agent
 ```
 
-The entrypoint checks your credentials. If missing, it prompts you to paste them in:
+The entrypoint checks your credentials. If missing, it prompts you to paste them:
 
 ```
 ============================================================
@@ -49,67 +78,31 @@ The entrypoint checks your credentials. If missing, it prompts you to paste them
   Saved to .env
 ```
 
-After all credentials are set, the bot starts. Search for your app name in Feishu and send it a message.
+After credentials are set, the bot starts. Search for your app name in Feishu and send it a message.
 
-> **Prefer to edit `.env` manually?** Fill in `LARK_APP_ID`, `LARK_APP_SECRET`, and `LLM_API_KEY`, then `docker compose up --build`.
-
----
-
-## Why Lark Agent Template?
-
-![Before vs After](./marketing/screenshots/02-pain.png)
-
-| Feature | Lark Agent Template | Feishu-OpenAI | nonebot2 |
-|---------|:-------------------:|:-------------:|:--------:|
-| Language | Python | Go | Python |
-| Tool calling with auto-harness | yes | no | no |
-| Observability (metrics, tracing) | built-in | no | no |
-| Provider-agnostic LLM | yes | OpenAI only | via plugins |
-| Template (clone & go) | yes | no | no |
-| Conversation memory | session + persistent | yes | via plugins |
-| Docker deployment | yes | yes | yes |
+> **Prefer manual setup?** Fill in `LARK_APP_ID`, `LARK_APP_SECRET`, and `LLM_API_KEY` in `.env`, then `docker compose up --build`.
 
 ---
 
-## Features
+## 🚀 Quick Start
 
-![Core capabilities](./marketing/screenshots/03-features.png)
+Once running, try these in Feishu:
 
-- **Agent loop** — LLM decides when to call tools, results feed back for multi-step reasoning
-- **Observability harness** — metrics, tracing, idempotency, schema validation — auto-wraps every tool
-- **Extensible** — add custom tools with `@register_tool`, harness coverage is automatic
-- **Memory** — session history + per-user persistent long-term memory
-- **Provider-agnostic** — any OpenAI-compatible API (OpenAI, DeepSeek, Mimo, Ollama, etc.)
-- **15 built-in tools** — calendar, tasks, docs, drive, messaging, web search
-- **Write confirmation** — destructive tools require user approval before executing
+| Say this | What happens |
+|----------|-------------|
+| "What's on my calendar today?" | Reads your calendar events |
+| "Create a task: submit report by Friday" | Shows a confirm card, then creates the task |
+| "Search docs for Q2 revenue" | Searches your Feishu documents |
+| "Send a message to the marketing group: meeting at 3pm" | Shows confirm card, then sends |
+| "What's the weather in Tokyo?" | Calls the web search tool |
 
----
-
-## Built-in Tools
-
-| Tool | Description | Risk |
-|------|-------------|:----:|
-| `get_calendar` | Read calendar events for a date range | read |
-| `create_calendar_event` | Create events with attendees | write |
-| `delete_calendar_event` | Delete a calendar event | destructive |
-| `get_tasks` | List tasks (filter by status/keyword) | read |
-| `get_task` | Get a single task by GUID | read |
-| `create_task` | Create a task with due date and assignees | write |
-| `delete_task` | Delete a task | destructive |
-| `search_docs` | Search Feishu documents by keyword | read |
-| `read_doc` | Read full document content | read |
-| `create_doc` | Create a new document | write |
-| `delete_doc` | Delete a document | destructive |
-| `move_file` | Move a file to another folder | write |
-| `create_folder` | Create a folder in Drive | write |
-| `send_message` | Send a message to user or group | write |
-| `search_web` | Search the web via SerpAPI | read |
+Protected write/destructive operations (create, delete, send) show an interactive card with **确认** and **取消** buttons. The pending action is stored in the database — if the bot restarts before you click, the action expires gracefully after 30 minutes.
 
 ---
 
-## Configuration
+## 🔧 Configuration
 
-All configuration is via environment variables. Copy `.env.example` to `.env` and fill in:
+All configuration via environment variables. Copy `.env.example` to `.env` and fill in:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -118,9 +111,12 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `LLM_API_KEY` | — | LLM provider API key (required) |
 | `LLM_BASE_URL` | `https://api.openai.com/v1` | LLM API base URL |
 | `LLM_MODEL` | `gpt-4o` | Model name |
+| `BOT_DISPLAY_NAME` | `Lark Agent` | Display name in card headers |
 | `MAX_HISTORY_ROUNDS` | `20` | Max conversation turns in context |
+| `MAX_HISTORY_TOKENS` | `1800` | Max tokens from conversation history |
 | `MAX_TOKEN_BUDGET` | `3000` | Max tokens in LLM response |
 | `REQUIRE_WRITE_CONFIRMATION` | `true` | Ask user before write/destructive tools |
+| `MESSAGE_DEDUP_SECONDS` | `300` | Dedup window for incoming messages |
 | `SEARCH_API_KEY` | — | SerpAPI key (optional, for web search) |
 | `DB_PATH` | `data/agent.db` | SQLite database path |
 | `LOG_LEVEL` | `INFO` | Logging level |
@@ -129,7 +125,7 @@ Switch LLM provider by changing `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL`. 
 
 ---
 
-## Adding Custom Tools
+## 🛠️ Adding Custom Tools
 
 ```python
 from src.tools.registry import register_tool
@@ -151,47 +147,78 @@ async def get_weather(city: str) -> dict:
     return tool_ok({"city": city, "temp": "25°C"})
 ```
 
-Place the file in `src/tools/` and restart — it auto-registers with full harness coverage.
+Place the file in `src/tools/` and restart — it auto-registers with full harness coverage (schema validation, metrics, tracing, idempotency).
+
+Tools with `risk_level="write"` or `"destructive"` automatically get the button-confirmation flow. No per-tool work needed.
 
 ---
 
-## Documentation
+## 📋 Built-in Tools
 
-### Getting Started
-
-| Doc | What it covers |
-|-----|----------------|
-| [`docs/onboarding-prompt.md`](docs/onboarding-prompt.md) | **Paste into any AI** for step-by-step guided setup. Asks where you are, skips completed steps. |
-| [`docs/feishu-app-setup.md`](docs/feishu-app-setup.md) | Feishu app creation, full permission scopes (60+), event subscription, publish & enable checklist. |
-
-### How It Works
-
-| Doc | What it covers |
-|-----|----------------|
-| [`docs/architecture.md`](docs/architecture.md) | Message flow, agent loop, harness layer, memory system, tool registry. |
-| [`docs/adding-tools.md`](docs/adding-tools.md) | Build custom tools with `@register_tool`. Harness auto-wraps schema, metrics, tracing. |
-
-### Deployment
-
-| Doc | What it covers |
-|-----|----------------|
-| [`docs/deploy-local-docker.md`](docs/deploy-local-docker.md) | Run on your laptop with Docker Compose. |
-| [`docs/deploy-vps.md`](docs/deploy-vps.md) | Deploy to a Linux VPS for 24/7 availability. Systemd service, firewall notes. |
-
-### Quick Reference
-
-| File | What it is |
-|------|------------|
-| [`.env.example`](.env.example) | All environment variables with comments. Copy to `.env`. |
-| [`AGENTS.md`](AGENTS.md) | Project governance, tech stack, constraints. |
-| [`tasks/STATUS.md`](tasks/STATUS.md) | Current project state, known issues, validated checklist. |
-| [`update.sh`](update.sh) | One-command update: pulls latest, rebuilds, starts bot. |
+| Tool | Description | Risk |
+|------|-------------|:----:|
+| `get_calendar` | Read calendar events for a date range | read |
+| `create_calendar_event` | Create events with attendees | write |
+| `delete_calendar_event` | Delete a calendar event | destructive |
+| `get_tasks` | List tasks (filter by status/keyword) | read |
+| `get_task` | Get a single task by GUID | read |
+| `create_task` | Create a task with due date and assignees | write |
+| `delete_task` | Delete a task | destructive |
+| `search_docs` | Search Feishu documents by keyword | read |
+| `read_doc` | Read full document content | read |
+| `create_doc` | Create a new document | write |
+| `delete_doc` | Delete a document | destructive |
+| `move_file` | Move a file to another folder | write |
+| `create_folder` | Create a folder in Drive | write |
+| `send_message` | Send a message to user or group | write |
+| `search_web` | Search the web via SerpAPI | read |
 
 ---
 
-## Updating
+## 🏗️ Architecture
 
-When a new version is released, run:
+```
+Feishu ──WebSocket──► Lark Client ──► Agent Loop ◄──► LLM API
+                                          │
+                                   Tool Registry
+                                   (harness wrap)
+                                          │
+                                    Memory (SQLite)
+                                          │
+                                   Interactive Cards
+                                   (CardKit v2)
+```
+
+Every tool call flows through the harness:
+
+```
+execute_tool(name, args)
+    ├── Schema validation
+    ├── Metrics (count, success/error rate)
+    ├── Tracing (SQLite: tool, duration, result)
+    ├── Idempotency check (write tools)
+    ├── Confirmation guard (write/destructive → button card)
+    └── Execute tool function
+```
+
+See [docs/architecture.md](docs/architecture.md) for the full design.
+
+---
+
+## 📖 Documentation
+
+| Doc | What it covers |
+|-----|----------------|
+| [docs/onboarding-prompt.md](docs/onboarding-prompt.md) | **Paste into any AI** for step-by-step guided setup |
+| [docs/feishu-app-setup.md](docs/feishu-app-setup.md) | Feishu app creation, permissions, event subscription |
+| [docs/architecture.md](docs/architecture.md) | Message flow, agent loop, harness, memory, cards |
+| [docs/adding-tools.md](docs/adding-tools.md) | Build custom tools with `@register_tool` |
+| [docs/deploy-local-docker.md](docs/deploy-local-docker.md) | Run on your laptop with Docker Compose |
+| [docs/deploy-vps.md](docs/deploy-vps.md) | Deploy to a Linux VPS for 24/7 availability |
+
+---
+
+## 🔄 Updating
 
 ```bash
 bash update.sh
@@ -201,33 +228,13 @@ Or manually:
 
 ```bash
 git pull origin main
-GIT_COMMIT=$(git rev-parse HEAD) docker compose build --no-cache
-docker compose run --rm agent
+docker compose up --build
 ```
-
-The bot prints its version on startup. If you see errors after updating, make sure the version hash matches the latest release.
-
----
-
-## Architecture
-
-![Message flow](./marketing/screenshots/05-how.png)
-
-```
-Feishu ──WebSocket──► Lark Client ──► Agent Loop ◄──► LLM API
-                                          │
-                                   Tool Registry
-                                   (harness wrap)
-                                          │
-                                    Memory (SQLite)
-```
-
-See [docs/architecture.md](docs/architecture.md) for the full design.
 
 ---
 
 <details>
-<summary>Advanced: VPS Deployment</summary>
+<summary>🚀 Advanced: VPS Deployment</summary>
 
 Deploy to a Linux VPS for 24/7 availability:
 
@@ -239,31 +246,32 @@ cp .env.example .env && nano .env
 docker compose up -d --build
 ```
 
-The agent connects outbound via WebSocket — no inbound ports needed.
+The agent connects outbound via WebSocket — no inbound ports needed. The `restart: unless-stopped` policy ensures auto-restart on crash or reboot.
 
 See [docs/deploy-vps.md](docs/deploy-vps.md) for systemd service setup and firewall notes.
 </details>
 
 <details>
-<summary>Development</summary>
+<summary>🛠️ Development</summary>
 
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e ".[dev]"
 pytest
 ```
 
-Run tests:
+Hot reload during development:
+
 ```bash
-pytest tests/
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 </details>
 
 ---
 
-## License
+## 📄 License
 
 MIT 2026 [Phat-Po](https://github.com/Phat-Po)
 

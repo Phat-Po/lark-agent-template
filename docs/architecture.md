@@ -72,6 +72,46 @@ Session memory is capped by `MAX_HISTORY_ROUNDS` and `MAX_HISTORY_TOKENS`. Only 
 
 Persistent memory is retrieved via `get_relevant_memories()` and prepended to the system prompt.
 
+## Interactive cards
+
+Replies are rendered as CardKit v2 cards (colored header + markdown body) instead of plain text. This gives users richer formatting — bold, lists, links — and enables button-based interactions.
+
+### Card types
+
+| Card | Header color | Purpose |
+|------|-------------|---------|
+| `build_reply_card(text)` | Blue (default) | Normal agent replies |
+| `build_confirm_card(text, tool, action_id)` | Blue | Protected write confirmation with 确认/取消 buttons |
+| `build_error_card(error_text)` | Red | Error messages |
+
+### SDK monkey-patches
+
+Two patches are applied at startup to work around lark-oapi SDK bugs:
+
+1. **`_patch_ws_client_loop()`** — The SDK's `WSClient.start()` uses a module-level `loop` variable that conflicts with uvicorn's running event loop. This patch creates a fresh, non-running loop so `run_until_complete()` works in the WSClient thread.
+
+2. **`_patch_ws_client_card_handler()`** — The SDK's `_handle_data_frame` silently drops `MessageType.CARD` messages (returns instead of routing to the event handler). This patch replaces it with a version that routes CARD messages through the same event handler as EVENT messages, enabling `channel.on("cardAction", ...)` to work.
+
+### Fallback strategy
+
+Every card send goes through `_send_card_with_fallback()`: if the card send fails (size limit, API error), it falls back to plain text. Cards exceeding 28KB are automatically truncated.
+
+## DB-persisted confirmation flow
+
+When a write/destructive tool is called:
+
+1. The agent stores a `pending_action` row in SQLite (keyed by `action_id`, a UUID).
+2. A confirm card with 确认/取消 buttons is returned to the user.
+3. On button click, `on_card_action` looks up the `action_id` in the DB and either executes or cancels.
+4. Pending actions expire after 30 minutes (`PENDING_ACTION_TTL_SECONDS`). Expired clicks show a helpful message.
+5. Multiple pending actions can coexist per user — each has its own `action_id`.
+
+This design survives bot restarts (DB-backed, not in-memory).
+
+## Timeout wrapper
+
+External API calls (e.g. Feishu messaging) are wrapped with `with_timeout()` (15-second default). On timeout, a sanitized error message is returned instead of hanging.
+
 ## Database schema
 
 ```sql
@@ -80,6 +120,7 @@ memories           -- persistent per-user memories
 agent_runs         -- one row per message processed (tracing)
 llm_calls          -- one row per LLM API call (latency, tokens)
 tool_invocations   -- one row per tool call (duration, result)
+pending_actions    -- DB-persisted confirmation buttons (action_id PK, expires_at)
 messages           -- idempotency table (message_id → status)
 idempotency_keys   -- write-tool dedup (hash → result)
 ```
@@ -98,6 +139,7 @@ All configuration is via environment variables. See `.env.example` for the full 
 | `MAX_HISTORY_ROUNDS` | 20 | Max conversation turns to include |
 | `MAX_TOKEN_BUDGET` | 3000 | Max tokens in LLM response |
 | `REQUIRE_WRITE_CONFIRMATION` | true | Ask user before write/destructive tools |
+| `BOT_DISPLAY_NAME` | Lark Agent | Display name shown in card headers |
 | `SYSTEM_PROMPT_FILE` | — | Path to custom system prompt file |
 | `DB_PATH` | data/agent.db | SQLite database path |
 | `LOG_LEVEL` | INFO | Logging level |

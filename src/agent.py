@@ -3,7 +3,6 @@
 import json
 import os
 import re
-import threading
 import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -24,11 +23,21 @@ from src.harness import metrics
 from src.harness.tracing import record_llm_call
 from src.harness.result import param_error, policy_error, tool_error
 from src.harness.idempotency import check_write_idempotency, record_write_result
-from src.db import get_conn
+from src.db import get_conn, load_pending_action
 from src.memory.session import get_session_history, append_session_message
 from src.memory.persistent import get_relevant_memories
 from src.tools import TOOL_DEFINITIONS
 from src.tools.registry import execute_tool, get_write_tool_names
+from src.action_policy import (
+    PolicyError,
+    store_pending_action,
+    take_pending_action,
+    take_pending_action_by_id,
+    clear_pending_action,
+    get_pending_action_id,
+    canonicalize_arguments,
+)
+from src.card_builder import build_confirm_card
 
 log = logging.getLogger("lark_agent.agent")
 
@@ -55,6 +64,8 @@ _DEFAULT_SYSTEM_PROMPT = (
     "You can help users with calendar management, document operations,\n"
     "task tracking, messaging, and web search.\n"
     "Answer in the user's language. Be concise and helpful.\n"
+    "You may use Feishu-flavored markdown (lark_md): bold, lists, and links\n"
+    "render nicely in interactive cards.\n"
     "Current time: {current_time}"
 )
 
@@ -66,34 +77,6 @@ def _load_system_prompt() -> str:
     return _DEFAULT_SYSTEM_PROMPT
 
 
-# --- Simplified pending-action store for write confirmation ---
-
-_pending_lock = threading.Lock()
-_pending: dict[str, dict] = {}
-
-
-def _pending_key(chat_id: str, sender_id: str) -> str:
-    return f"{chat_id}:{sender_id}"
-
-
-def _store_pending(chat_id: str, sender_id: str, tool_name: str, args_json: str) -> None:
-    with _pending_lock:
-        _pending[_pending_key(chat_id, sender_id)] = {
-            "tool_name": tool_name,
-            "args_json": args_json,
-        }
-
-
-def _take_pending(chat_id: str, sender_id: str) -> dict | None:
-    with _pending_lock:
-        return _pending.pop(_pending_key(chat_id, sender_id), None)
-
-
-def _clear_pending(chat_id: str, sender_id: str) -> None:
-    with _pending_lock:
-        _pending.pop(_pending_key(chat_id, sender_id), None)
-
-
 # ---
 
 
@@ -103,8 +86,12 @@ async def chat(
     sender_open_id: str = "",
     trace_id: str = "",
     msg=None,
-) -> str:
-    """Process a user message and return the agent's reply."""
+) -> str | dict:
+    """Process a user message and return the agent's reply.
+
+    Returns a plain string for normal replies, or a dict like
+    {"type": "card", "card": ...} when a confirm card should be sent.
+    """
     message_id = getattr(msg, "message_id", "") if msg else ""
 
     history = get_session_history(chat_id, MAX_HISTORY_ROUNDS, MAX_HISTORY_TOKENS)
@@ -124,20 +111,18 @@ async def chat(
     save_conversation(chat_id, "user", user_message)
 
     if REQUIRE_WRITE_CONFIRMATION and _is_confirmation(user_message):
-        pending = _take_pending(chat_id, sender_open_id)
-        if pending:
+        pending_row = load_pending_action(chat_id, sender_open_id)
+        if pending_row:
             result = await execute_tool(
-                pending["tool_name"],
-                pending["args_json"],
+                pending_row["tool_name"],
+                pending_row["arguments_json"],
                 trace_id=trace_id,
                 message_id=message_id,
             )
-            reply = _format_tool_result(pending["tool_name"], result)
+            reply = _format_tool_result(pending_row["tool_name"], result)
         else:
             reply = "No pending action to confirm. Please describe what you'd like to do."
     else:
-        if REQUIRE_WRITE_CONFIRMATION:
-            _clear_pending(chat_id, sender_open_id)
         reply = await _run_agent_loop(
             messages,
             trace_id=trace_id,
@@ -146,13 +131,27 @@ async def chat(
             message_id=message_id,
         )
 
+    # Check if a pending action was stored during this turn → emit confirm card
+    pending_row = load_pending_action(chat_id, sender_open_id)
+    if pending_row:
+        action_id = pending_row["action_id"] or get_pending_action_id(chat_id, sender_open_id)
+        tool_name = pending_row["tool_name"]
+        confirm_text = _build_confirm_text(tool_name, pending_row["arguments_json"])
+        card_text = confirm_text if not reply else f"{reply}\n\n{confirm_text}"
+        confirm_card = build_confirm_card(
+            text=card_text,
+            tool_name=tool_name,
+            action_id=action_id,
+        )
+        append_session_message(chat_id, "assistant", reply)
+        save_conversation(chat_id, "assistant", reply)
+        return {"type": "card", "card": confirm_card}
+
+    reply = sanitize_reply(reply)
     append_session_message(chat_id, "assistant", reply)
     save_conversation(chat_id, "assistant", reply)
 
     return reply
-
-
-handle_message = chat
 
 
 def _is_confirmation(text: str) -> bool:
@@ -418,10 +417,14 @@ async def _execute_tool_with_guards(
 
     if REQUIRE_WRITE_CONFIRMATION and name in write_tools:
         try:
-            _store_pending(chat_id, sender_open_id, name, arguments_json)
             args = json.loads(arguments_json)
         except json.JSONDecodeError as exc:
             return param_error(f"Invalid JSON arguments: {exc}")
+        canonical = canonicalize_arguments(arguments_json)
+        store_pending_action(
+            chat_id, sender_open_id, name, canonical,
+            request_text=f"{name}({', '.join(f'{k}={v!r}' for k, v in args.items())})",
+        )
         params = ", ".join(f"{k}={v!r}" for k, v in args.items())
         return tool_error(
             "CONFIRM_REQUIRED",
@@ -435,3 +438,45 @@ async def _execute_tool_with_guards(
     result = await execute_tool(name, arguments_json, trace_id=trace_id, message_id=message_id)
     record_write_result(message_id, name, arguments_json, result)
     return result
+
+
+async def execute_pending_action(pending_action, trace_id: str = "", user_id: str = "") -> str:
+    """Execute a confirmed pending action (single tool)."""
+    result = await execute_tool(
+        pending_action.tool_name,
+        pending_action.arguments_json,
+        trace_id=trace_id,
+    )
+    return sanitize_reply(_format_tool_result(pending_action.tool_name, result))
+
+
+def _expired_request_message(action) -> str:
+    """User-facing message when a confirmation has expired."""
+    request = (getattr(action, "request_text", "") or "").strip() if action else ""
+    if request:
+        return f"Your request has expired. Please re-submit: [{request}]"
+    return "The pending action has expired. Please describe what you'd like to do again."
+
+
+def _build_confirm_text(tool_name: str, arguments_json: str) -> str:
+    """Build a generic preview of the tool call for the confirm card."""
+    try:
+        args = json.loads(arguments_json)
+    except (json.JSONDecodeError, TypeError):
+        args = {}
+    lines = [f"**Confirm action: `{tool_name}`**", ""]
+    for k, v in args.items():
+        sval = str(v)
+        if len(sval) > 120:
+            sval = sval[:120] + "…"
+        lines.append(f"- **{k}**: {sval}")
+    lines.append("")
+    lines.append("Click 确认 to proceed, 取消 to cancel.")
+    return "\n".join(lines)
+
+
+def sanitize_reply(text: str) -> str:
+    """Normalize model output for Feishu card lark_md format."""
+    text = text or ""
+    text = text.strip()
+    return text or "The model returned no content. Please try again."

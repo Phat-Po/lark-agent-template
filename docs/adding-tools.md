@@ -47,8 +47,10 @@ The `risk_level` parameter controls confirmation behaviour when `REQUIRE_WRITE_C
 | Level | Behaviour |
 |-------|-----------|
 | `read` | Executes immediately, no confirmation |
-| `write` | Asks user to confirm before executing |
-| `destructive` | Asks user to confirm before executing |
+| `write` | Shows a confirm/cancel card before executing (DB-persisted, survives restart) |
+| `destructive` | Shows a confirm/cancel card before executing (DB-persisted, survives restart) |
+
+> **Note:** Any tool registered with `risk_level="write"` or `risk_level="destructive"` automatically gets the button-confirmation flow. No per-tool work is needed — the harness handles it.
 
 ## Result envelope
 

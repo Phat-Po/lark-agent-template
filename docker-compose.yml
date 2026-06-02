@@ -12,4 +12,4 @@ services:
       - ./.env:/app/.env
     stdin_open: true
     tty: true
-    restart: "no"
+    restart: unless-stopped
